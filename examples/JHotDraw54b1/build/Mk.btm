@@ -1,0 +1,169 @@
+@echo off
+setlocal
+
+goto Main
+:: ####################################################################
+:: # display commandline help
+:: ####################################################################
+:usage
+echo.
+echo Script to build JHotDraw
+echo.
+echo usage: mk [options]
+echo.
+echo  option:
+echo   -verbose             be verbose
+echo   -debug               turn on debug build
+echo   -clean               delete all class files first
+echo   -compile             compile only
+echo   -javadoc             generate javadoc
+echo   -stylecheck          check the style of the source file
+echo   -all                 clean, compile and javadoc
+echo   -javadraw            run the JavaDraw application example (compile if necessary)
+echo   -pert                run the PERT application example (compile if necessary)
+echo   -net                 run the JavaDraw application example (compile if necessary)
+echo   -nothing             run the JavaDraw application example (compile if necessary)
+echo   -junit               run (and generate and compile if necessary) the test cases
+echo   -junit_compile       generate and compile the test cases
+echo.   
+echo   -h                   this help 
+echo.
+return
+
+:: ####################################################################
+:: # Main
+:: ####################################################################
+:Main
+	gosub parseArgs
+	gosub Init
+echo antTarget: %antTarget%
+	iff "%antTarget%" != "" then
+		gosub Build
+	endiff
+goto End
+
+:: ####################################################################
+:: # Init
+:: ####################################################################
+:Init
+	iff "%JDK_PATH%" == "" then
+		set JDK_PATH=c:\java\jdk1.4
+	endiff
+
+	iff "%ANT_HOME%" == "" then
+		set ANT_HOME=c:\dev\ant
+	endiff
+
+	iff "%ANT_PROJECT%" == "" then
+		set ANT_PROJECT=build.xml
+	endiff
+		
+	iff %@index[%PATH%,%ANT_HOME%\bin] == -1 then	
+		set PATH=%ANT_HOME%\bin;%PATH%
+	endiff
+
+return
+
+:: ####################################################################
+:: # call ANT to Compile the project
+:: ####################################################################
+:Build
+
+	gosub setCompilerFlags
+	set JAVA_HOME=%JDK_PATH%
+	set JAVA_CLASSPATH=%JAVA_HOME%\lib\tools.jar
+	set ANT_JAR=%ANT_HOME%\lib\ant.jar;%ANT_HOME%\lib\jaxp.jar;%ANT_HOME%\lib\crimson.jar;%ANT_HOME%\lib\optional.jar;C:\java\junit\junit.jar
+	set CLASSPATH=%ANT_JAR%;%JAVA_CLASSPATH%
+	echo.
+	echo Building %ANT_PROJECT%
+	echo CLASSPATH: %CLASSPATH%
+	echo %JAVA_HOME%\bin\java %antCall% %antTarget% %antFlags% %buildfile%
+	%JAVA_HOME%\bin\java %antCall% %antTarget% %antFlags% %buildfile%
+return
+
+:: ####################################################################
+:: # Set Compiler Flags
+:: ####################################################################
+:setCompilerFlags
+
+	iff "%BUILD_DEBUG" == "1" then
+		set DEBUGFLAGS=on
+		shift
+	else
+		set DEBUGFLAGS=off
+	endiff
+
+	iff "%USE_VERBOSEMODE" == "1" then
+		set verbose=-verbose
+		shift
+	else
+		set verbose=
+	endiff
+
+	set antFlags=-Djavac.debug=%DEBUGFLAGS% %verbose%
+
+	set buildfile=-buildfile %ANT_PROJECT%
+	set antCall=-Dant.home="%ANT_HOME%" org.apache.tools.ant.Main
+return
+
+:: ####################################################################
+:: # parse command line arguments
+:: ####################################################################
+:parseArgs
+
+set USE_VERBOSEMODE=0
+set INTERACTIVE_MODE=0
+set BUILD_DEBUG=0
+set OUTPUT_DIR=%_CWD% ::to be changeable later
+
+iff "%1" == "" then
+	set antTarget=main
+else
+	do forever
+		:: iterate until last parameter has been processed
+		iff "%1" == "" then
+			leave
+		endiff
+		
+		iff "%@SUBSTR[%1,0,1]" =="-" then
+			iff "%1" =="-verbose" then
+				set USE_VERBOSEMODE=1
+			elseiff "%1" =="-debug" then
+				set BUILD_DEBUG=1
+			elseiff "%1" =="-clean" then
+				set antTarget=clean
+			elseiff "%1" =="-compile" then
+				set antTarget=compile
+			elseiff "%1" =="-javadoc" then
+				set antTarget=javadoc
+			elseiff "%1" =="-stylecheck" then
+				set antTarget=stylecheck
+			elseiff "%1" =="-all" then
+				set antTarget=all
+			elseiff "%1" =="-javadraw" then
+				set antTarget=javadraw
+			elseiff "%1" =="-pert" then
+				set antTarget=pert
+			elseiff "%1" =="-net" then
+				set antTarget=net
+			elseiff "%1" =="-nothing" then
+				set antTarget=nothing
+			elseiff "%1" =="-junit" then
+				set antTarget=junit_test
+			elseiff "%1" =="-junit_compile" then
+				set antTarget=junit_compile
+			elseiff "%1" =="-h" then
+				gosub usage
+				goto end
+			else
+				echo unknown option %1
+				gosub usage
+				leave
+			endiff
+		endiff
+		shift
+		iterate
+	enddo
+endiff
+
+:End

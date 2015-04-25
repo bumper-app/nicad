@@ -1,0 +1,54 @@
+#!/bin/bash
+# Find all clones in a given set of potential clones in XML format
+
+ulimit -s hard
+
+# Find our installation
+lib="${0%%/scripts/FindClones}"
+if [ ! -d ${lib} ]
+then
+    echo "*** Error:  cannot find NiCad installation ${lib}"
+    echo ""
+    exit 99
+fi
+
+# Check we have a system
+if [ ! -f "$1" ] 
+then
+    echo "Usage:  FindClones system-name_granularity.xml threshold [ minclonesize ] [ maxclonesize] [ showsource ]"
+    echo "  e.g.,   FindClones systems/c/linux_functions.xml 0.0"
+    echo "  e.g.,   FindClones systems/c/linux_functions.xml 0.2 3 2000 showsource"
+    exit 99
+else
+    pcsfile=$1
+    shift
+fi
+
+# And a threshold
+if [ "$1" != "" ] 
+then
+    threshold=$1
+else
+    echo "Usage:  FindClones system-name_functions.xml threshold [ minclonesize ] [ maxclonesize] [ showsource ]"
+    exit 99
+fi
+
+# Other arguments we just pass on to clones.x
+
+# Put our results in the same directory as the potential clones file
+basename=${pcsfile%%.xml}
+resultsdir=${basename}-clones
+mkdir ${resultsdir} 2> /dev/null
+systemname=${basename##*/}
+
+# OK, let's run it
+date
+echo "${lib}/tools/clones.x ${basename}.xml $* > ${resultsdir}/${systemname}-clones-${threshold}.xml"
+time ${lib}/tools/clones.x ${basename}.xml $* > ${resultsdir}/${systemname}-clones-${threshold}.xml
+result=$?
+
+echo ""
+date
+echo ""
+
+exit $result

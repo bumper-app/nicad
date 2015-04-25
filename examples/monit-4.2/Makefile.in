@@ -1,0 +1,176 @@
+# Copyright (C), 2000-2004 by the monit project group.
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+# ---------------------------------------------------------------------
+#
+#  SYNOPSIS
+#     make {all|install|clean|uninstall|distclean|devclean}
+#
+# AUTHOR: 
+#     Jan-Henrik Haukeland, <hauk@tildeslash.com>
+#
+# CVS INFO
+#     $Id: Makefile.in,v 1.20 2004/01/29 17:52:11 martinp Exp $
+#
+
+
+# Programs (with common options):
+SHELL           = /bin/sh
+RM		= /bin/rm -fr
+ETAGS           = etags
+
+# Install modes 
+MODE_PROGS      = 555
+MODE_FILES      = 444
+MODE_DIRS       = 755
+
+INSTALL         = @INSTALL@ 
+INSTALL_PROG    = $(INSTALL) -m $(MODE_PROGS) -s
+INSTALL_FILE    = $(INSTALL) -m $(MODE_FILES)
+INSTALL_DIR     = $(INSTALL) -m $(MODE_DIRS) -d
+
+DESTDIR         =
+
+# ------------------------------------------------------------------- #
+
+prefix = @prefix@
+exec_prefix = @prefix@
+
+BINDIR 	= @bindir@
+MANDIR 	= @mandir@/man1
+
+# ------------------------------------------------------------------- #
+
+# Name of program to build
+PROG		= monit
+
+INCDIR		= -I. -I./device -I./http -I./process -I./protocols
+LIB 		= @LEXLIB@ @LIBS@
+DEFINES		= -D@ARCH@
+
+# ------------------------------------------------------------------- #
+
+CC		= @CC@
+LEX 		= @LEX@
+YACC 		= @YACC@
+
+LINKFLAGS	= @LDFLAGS@
+CFLAGS		= @CFLAGS@ $(DEFINES) @CPPFLAGS@ $(INCDIR)
+LEXFLAGS	= -i
+YACCFLAGS 	= -dt
+
+# ------------------------------------------------------------------- #
+
+# Grammar files
+GRAMMAR 	:= y.tab.c lex.yy.c
+
+# Filter out platform spesific files
+FILTER          := $(wildcard device/sysdep_*.c process/sysdep_*.c\
+                              external/*.c)
+
+EXTERNALS	:= @EXTERNALS@
+
+# Source files
+SOURCE          := $(filter-out $(GRAMMAR) $(FILTER), \
+                   $(wildcard *.c) $(wildcard */*.c)) \
+                   device/sysdep_@PROCARCH@.c\
+                   process/sysdep_@PROCARCH@.c\
+                   $(GRAMMAR) $(EXTERNALS)
+
+# Object files
+OBJECTS 	:= $(SOURCE:.c=.o) 
+
+# Man files
+MAN_OBJS  	:= $(wildcard *.1)
+
+# Header files
+HEADERS 	:= $(wildcard *.h)\
+		   $(wildcard device/*.h)\
+                   $(wildcard http/*.h)\
+                   $(wildcard process/*.h)\
+                   $(wildcard protocols/*.h)
+
+# ------------------------------------------------------------------- #
+
+define check-exit
+|| exit 1
+
+endef
+
+# -----
+# Rules
+# -----
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+# -------
+# Targets
+# -------
+.PHONY: all clean install uninstall distclean devclean
+
+all : $(PROG)
+
+$(PROG) : $(GRAMMAR) $(OBJECTS) 
+	$(CC) $(LINKFLAGS) $(OBJECTS) $(LIB) -o $(PROG) 
+
+clean::
+	$(RM) *~ \#* $(PROG) core $(OBJECTS) $(GRAMMAR) y.tab.h 
+
+# remove configure files
+distclean:: clean
+	$(RM) config.cache config.log config.status Makefile config.h \
+	autom4te*
+
+devclean:: clean distclean
+	$(RM) configure config.h.in aclocal.m4
+
+install:: $(PROG)
+	$(INSTALL_DIR) $(DESTDIR)$(BINDIR) $(check-exit)
+	$(INSTALL_DIR) $(DESTDIR)$(MANDIR) $(check-exit)
+	$(INSTALL_PROG) $(PROG) $(DESTDIR)$(BINDIR) $(check-exit)
+	$(foreach file, $(MAN_OBJS), \
+		$(INSTALL_FILE) $(file) $(DESTDIR)$(MANDIR)/$(file) \
+	$(check-exit))
+
+uninstall:: 
+	$(RM) $(DESTDIR)$(BINDIR)/$(PROG) $(check-exit)
+	$(foreach file, $(MAN_OBJS), \
+		$(RM) $(DESTDIR)$(MANDIR)/$(file) \
+	$(check-exit))
+
+doc::   
+	doxygen doxygen.cfg
+
+etag:
+	$(ETAGS) $(filter-out $(GRAMMAR), $(FILTER) $(SOURCE)) p.y l.l
+
+
+# ---
+# Dep
+# ---
+$(OBJECTS): $(HEADERS)
+
+# -------------
+# Grammar rules
+# -------------
+
+y.tab.c y.tab.h: p.y
+	$(YACC) $(YACCFLAGS) $<
+
+lex.yy.c: l.l
+	$(LEX) $(LEXFLAGS) $<
+

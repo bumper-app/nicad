@@ -1,0 +1,47 @@
+#if not TL_SIGNAL_TYPES then
+#define TL_SIGNAL_TYPES
+
+/* Turing Plus version of sys/signal.h	*/
+
+const *NSIG	:= 32
+
+const *SIGHUP	:= 1	/* hangup */
+const *SIGINT	:= 2	/* interrupt (rubout)*/
+const *SIGQUIT	:= 3	/* quit (ASCII FS) */
+const *SIGILL	:= 4	/* illegal instruction (not reset when caught) */
+const *SIGTRAP	:= 5	/* trace trap (not reset when caught) */
+const *SIGIOT	:= 6	/* IOT instruction */
+const *SIGABRT	:= SIGIOT
+const *SIGEMT	:= 7	/* EMT instruction */
+const *SIGFPE	:= 8	/* floating point exception */
+const *SIGKILL	:= 9	/* kill (cannot be caught or ignored) */
+const *SIGBUS	:= 10	/* bus error */
+const *SIGSEGV	:= 11	/* segmentation violation */
+const *SIGSYS	:= 12	/* bad argument to system call */
+const *SIGPIPE	:= 13	/* write on a pipe with no one to read it */
+const *SIGALRM	:= 14	/* alarm clock */
+const *SIGTERM	:= 15	/* software termination signal from kill */
+const *SIGUSR1	:= 16	/* user defined signal 1 */
+const *SIGUSR2	:= 17	/* user defined signal 2 */
+const *SIGCLD	:= 18	/* child status change */
+const *SIGCHLD	:= SIGCLD
+const *SIGPWR	:= 19	/* power-fail restart */
+const *SIGWINCH	:= 20	/* window size change */
+const *SIGURG	:= 21	/* urgent socket condition */
+const *SIGPOLL  := 22	/* pollable event occured */
+const *SIGIO	:= SIGPOLL
+const *SIGSTOP	:= 23	/* stop (cannot be caught or ignored) */
+const *SIGTSTP	:= 24	/* user stop requested from tty */
+const *SIGCONT	:= 25	/* stopped process has been continued */
+const *SIGTTIN	:= 26	/* background tty read attempted */
+const *SIGTTOU	:= 27	/* background tty write attempted */
+const *SIGVTALRM:= 28	/* virtual timer expired */
+const *SIGPROF	:= 29	/* profiling timer expired */
+const *SIGXCPU	:= 30	/* exceeded cpu limit */
+const *SIGXFSZ	:= 31	/* exceeded file size limit */
+
+type *sigmask : set of 1 .. NSIG
+
+type *sigproc : proc s (sig : int)
+
+#end if /* TL_SIGNAL_TYPES */

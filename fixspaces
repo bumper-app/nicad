@@ -1,0 +1,58 @@
+#!/bin/bash
+# NiCad3 system preparation utility -
+# Fix spaces in directory names so NiCad can process a system
+
+if [ "$1" == "" ]
+then
+    echo "Usage:  fixspaces system-source-dir"
+    exit 99
+fi
+
+while [ 1=1 ]
+do
+
+# Find all the directories and files with spaces in them, bottom up
+find -d "$1" -type d | grep " " > /tmp/fix$$
+
+if [ ! -s /tmp/fix$$ ]
+then
+    echo "Done."
+    break
+fi
+
+# Quote original versions
+ex -s /tmp/fix$$ << EOF
+v/^[^ ]* [^\/]*\$/d
+1,\$s/.*/\"&"/
+w
+q
+EOF
+
+cp /tmp/fix$$ /tmp/nfix$$
+
+# Make underscore versions
+ex -s /tmp/nfix$$ << EOF2
+g/ /s//_/g
+w
+q
+EOF2
+
+# Concatenate the two and turn them into move commands
+pr -m -t -w 200 /tmp/fix$$ /tmp/nfix$$ > /tmp/cfix$$
+
+ex -s /tmp/cfix$$ << EOF3
+1,\$s/^/\/bin\/mv /
+1,\$s/[ 	][ 	][ 	]*/ /
+w
+q
+EOF3
+
+# Run the move commands
+cat /tmp/cfix$$ | sed -e "s/   */ /"
+sh /tmp/cfix$$
+
+done
+
+# Clean up
+/bin/rm -f /tmp/fix$$ /tmp/nfix$$ /tmp/cfix$$
+

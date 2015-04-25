@@ -1,0 +1,132 @@
+#!/bin/bash 
+# Generic NiCad extractor script
+#
+# Usage:  Extract granularity language system-directory ... 
+#           where granularity is one of:  { functions blocks ... }
+#           and   language    is one of:  { c java cs py ... }
+
+# Revised 17 Nov 2010
+
+ulimit -s hard
+
+# Find our installation
+lib="${0%%/scripts/Extract}"
+if [ ! -d ${lib} ]
+then
+    echo "*** Error:  cannot find NiCad installation ${lib}"
+    echo ""
+    exit 99
+fi
+
+# check granularity
+if [ "$1" != "" ] 
+then
+    granularity=$1
+    shift
+else
+    echo "Usage:  Extract granularity language system-directory ..."
+    echo "          where granularity is one of:  { functions blocks ... }"
+    echo "          and   language    is one of:  { c java cs py ... }"
+    exit 99
+fi
+
+# check language
+if [ "$1" != "" ] 
+then
+    language=$1
+    shift
+else
+    echo "Usage:  Extract granularity language system-directory ..."
+    echo "          where granularity is one of:  { functions blocks ... }"
+    echo "          and   language    is one of:  { c java cs py ... }"
+    exit 99
+fi
+
+# check at least one system directory
+if [ ! -d "$1" ]
+then
+    echo "Usage:  Extract granularity language system-directory ..."
+    echo "          where granularity is one of:  { functions blocks ... }"
+    echo "          and   language    is one of:  { c java cs py ... }"
+    exit 99
+fi
+
+# check we have the extractor we need
+if [ ! -s ${lib}/txl/${language}-extract-${granularity}.txl ]
+then
+    echo "*** ERROR: Language ${language} not supported at granularity ${granularity}"
+    exit 99
+fi
+
+# Check we have a system
+system=$1
+if [ ! -d "${system}" ]
+then
+    echo "*** ERROR: Can't find system source directory ${system}"
+    exit 99
+fi
+
+# Clean up any previous results
+/bin/rm -rf ${system}_${granularity}
+echo -n > ${system}_${granularity}.xml
+
+# Extract potential clones
+date
+
+# Find all language source files in the directory and its subdirectories
+if [ -x ${lib}/txl/${language}-extract-${granularity}.x ]
+then
+    echo "${lib}/txl/${language}-extract-${granularity}.x -s 400 ALL.${language} >> ${system}_${granularity}.xml"
+else
+    echo "txl -q -s 400 ALL.${language} ${lib}/txl/${language}-extract-${granularity}.txl >> ${system}_${granularity}.xml"
+fi
+
+result=0
+
+for i in `find ${system} | grep "\.${language}"'$'` 
+do
+    source=${i}
+    if [ ${language} = "c" ] || [ ${language} = "cs" ]
+    then
+        if [ -x ${lib}/txl/ifdef.x ]
+        then
+            # echo "${lib}/txl/ifdef.x ${i} > ${i}.ifdefed"
+            ${lib}/txl/ifdef.x ${i} > ${i}.ifdefed
+        else
+            # echo "txl -q -s 400 ${i} ${lib}/txl/ifdef.txl > ${i}.ifdefed"
+            txl -q -s 400 ${i} ${lib}/txl/ifdef.txl > ${i}.ifdefed
+        fi
+        source=${i}.ifdefed
+    fi
+    if [ ${language} = "py" ] 
+    then
+        if [ -x ${lib}/txl/pyindent.x ]
+        then
+            # echo "${lib}/txl/pyindent.x ${i} > ${i}.pyindent"
+            ${lib}/txl/pyindent.x ${i} > ${i}.pyindent
+        else
+            # echo "txl -q -s 400 ${i} ${lib}/txl/pyindent.txl > ${i}.pyindent"
+            txl -q -s 400 ${i} ${lib}/txl/pyindent.txl > ${i}.pyindent
+        fi
+        source=${i}.pyindent
+    fi
+    if [ -x ${lib}/txl/${language}-extract-${granularity}.x ]
+    then
+        # echo "${lib}/txl/${language}-extract-${granularity}.x -s 400 ${source} >> ${system}_${granularity}.xml"
+        ${lib}/txl/${language}-extract-${granularity}.x -s 400 "${source}" >> ${system}_${granularity}.xml
+    else
+        # echo "txl -q -s 400 ${source} ${lib}/txl/${language}-extract-${granularity}.txl >> ${system}_${granularity}.xml"
+        txl -q -s 400 "${source}" ${lib}/txl/${language}-extract-${granularity}.txl >> ${system}_${granularity}.xml
+    fi
+
+    if [ $? != 0 ]
+    then
+	result=$?
+    fi
+done
+
+echo ""
+date
+echo ""
+
+exit $result

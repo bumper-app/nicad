@@ -1,0 +1,41 @@
+Changes from NiCad 3.1 in 3.2
+
+1. Maximum clone size has been raised to 20,000 lines, 
+   and the default maximum in distributed configurations 
+   to 2,500 lines.
+
+2. All scripts and Makefiles updated to automatically adapt
+   to new languages, granularities and plugins.  
+
+   To add a new language, simply add a TXL extractor for 
+   the language and desired granularity.
+
+   For example, to add handling of Javascript, just add the 
+   grammar and extractor granularity files for the new language:
+
+	txl/js.grm
+	txl/js-extract-functions.txl
+
+   Then type "make".  The new language can then be immediately
+   processed with no changes to any scripts or Makefiles,
+   for example:
+
+	nicad3 functions js my-javascript-source-dir type2
+
+   To add a new granularity, simply add a TXL extractor for
+   the new granularity.
+
+   For example, to add handling of Java class clones, just
+   add the extractor for Java classes:
+
+	txl/java-extract-classes.txl
+
+   Then type "make".  The new granularity can then be immediately
+   processed with no changes to any scripts or Makefiles, 
+   for example:
+
+	nicad3 classes java my-java-source-dir type2
+
+
+
+	

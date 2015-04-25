@@ -1,0 +1,96 @@
+Questions and answers about NiCad3 can be found in the
+NiCad3 discussion forum on the TXL website:
+
+    http://www.txl.ca/forum/viewforum.php?f=20
+
+Frequently asked questions:
+
+1. What types of clones does NiCad3 detect?
+
+    NiCad3 detects clone types 1-3.
+
+    To detect type 1 (exact) clones, set threshold=0.0
+    To detect type 2 (renamed) clones, set threshold=0.0 and rename=blind
+    To detect type 2c (consistently renamed) clones, set threshold=0.0 and rename=consistent
+    To detect type 3-1 (near-miss exact) clones, set threshold=0.3 
+    To detect type 3-2 (near-miss renamed) clones, set threshold=0.3 and rename=blind 
+    To detect type 3-2c (near-miss consistently renamed) clones, set threshold=0.3 and rename=consistent
+
+    Predefined configurations for each of these NiCad3 configurations
+    are in the config/ subdirectory.  Predefined configurations include
+    type1, type2, type2c, type3-1, type3-2, type3-c, corresponding to the 
+    options above.  
+
+    For example, to detect only type 1 (exact) clones in the JHotDraw54b1 
+    example system, use the NiCad3 command:
+
+        nicad3 functions java examples/JHotDraw54b1 type1
+   
+    Note that results are inclusive, that is, type 2 includes type 1,
+    type 3-1 includes type 1, and type 3-2 includes types 1 and 2.
+
+2. What languages does NiCad3 handle?
+
+    NiCad3 comes with plugins to handle C, Java, C#, Python and WSDL,
+    but can handle any language easily.
+
+    Any other language L for which there is a TXL grammar can be
+    added by creating simple "L-extract-functions.txl" and 
+    "L-extract-blocks.txl" TXL programs to extract the corresponding 
+    code fragments from an L program. 
+ 
+3. What code fragment granularities can NiCad3 handle?
+
+    NiCad3 comes with plugins to detect function (method) and block
+    (compound statement) clones.
+
+    Other granularities can easily be added by creating simple variants
+    of the TXL extractor plugins for other code units.
+
+4. What forms of output does NiCad3 produce?
+
+    NiCad3 produces clone pairs in XML-like format specifying the
+    source file and starting and ending line numbers of each original
+    source fragment in the pair, for example:
+
+        <clone nlines="42" similarity="100">
+            <source file="EGsystem/EGfile1.java" startline="477" endline="529" pcid="596"></source>
+            <source file="EGsystem/EGfile2.java" startline="417" endline="470" pcid="595"></source>
+        </clone>
+
+    If the NiCad3 configuration includes "report=yes", additional reports
+    in both XML and browser-compatible HMTL web page form are produced
+    with original source code for each fragment.
+
+5. Can NiCad3 cluster clone pairs into clone classes?
+
+    NiCad3 can optionally cluster clone pairs into clone classes by
+    including "cluster=yes" in the configuration file.  Each clone class
+    consists of the largest set of detected source fragments that are related
+    to one another by at least one clone pair.
+ 
+6. What normalization and other clone detection options does NiCad3 support?
+
+    NiCad3 includes configuration options to customize clone detection 
+    to filter (ignore) or abstract (treat as same) any part of the code.  
+
+    For example, to ignore declarations, make a NiCad3 configuration 
+    including "filter=declaration", or to treat all expressions as 
+    equivalent, make a NiCad3 configuration including "abstract=expn".  
+ 
+    Custom normalizations can be added to custom transform the code 
+    in any way you wish before comparison using "normalize=mytransform", 
+    where "mytransform.txl" is any TXL source transformation you wish
+    to add.
+
+7. Can NiCad3 find clones between two different systems?
+
+    NiCad3 can detect cross-clones between two different systems
+    using the command "nicad3cross", which reports only clones that
+    cross between two different systems.
+
+    If you require both clones inside the systems and between them,
+    put the root source directory of both systems in a parent directory
+    and use the regular "nicad" command on that directory.
+
+JRC 1.3.12

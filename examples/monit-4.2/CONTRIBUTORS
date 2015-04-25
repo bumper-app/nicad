@@ -1,0 +1,55 @@
+
+			  The Monit Project
+
+		   http://www.tildeslash.com/monit/
+
+============================================================================
+
+The monit project group:
+
+    Jan-Henrik Haukeland (hauk@tildeslash.com)
+      The Project Manager and prime mover
+ 
+    Martin Pala (martinp@tildeslash.com)
+      Specialist for planning, strategy and mixing drinks
+ 
+    Rory Toma (rory@digeo.com)
+      VP of Run Level 9
+ 
+    Christian Hopp (chopp@iei.tu-clausthal.de)
+      Research exotic stuff and brews interesting tea
+
+
+Old group members now off doing other things:
+
+    Thomas "Leppo" Oppel (oppel at kbis de)
+      Created Suse Packages for monit and managed monit packages
+      at savannah.gnu.org
+
+
+Other major contributors:
+
+    Mark Ferlatte (ferlatte@cryptio.net)
+      Fixed our autoconf system, contributed bugfixes 
+      and many good ideas.
+
+    Igor Homyakov (homyakov@altlinux.ru)
+      Created several protocol tests, contributed bugfixes 
+      and many good ideas.
+
+
+Contributors in alphabetical order:
+
+ Michael Amster (mamster@webeasy.com)
+ Olivier Beyssac (ob@r14.freenix.org)
+ Marco Bisioli (bisioli@adriacom.it)
+ Joe Bryant (JBryant@RiteAid.com)
+ Peter Holdaway <pholdaway@technocom-wireless.com> 
+ Mostafa Hosseini (mostafah@oeone.com)
+ Francois Isabelle (Francois.Isabelle@ca.kontron.com)
+ Oliver Jehle (oliver.jehle@monex.li)
+ Kianusch Sayah Karadji (kianusch.sayah.karadji@sk-tech.net)
+ Arkadiusz Miskiewicz (arekm@pld-linux.org)
+ Rick Robino (rrobino@wavedivision.com>)
+ Richard Schwaninger (risc@vmilch.at)
+ Margarida Sequeira (margarida@openbsd.org)

@@ -1,0 +1,12 @@
+#!/bin/bash 
+# NiCad localization wrapper for Unix-like systems
+# J.R. Cordy, Queen's University, January 2011
+
+# Directory where NiCad has been installed
+LIB=.
+
+# Kind of system we are running on (Ubuntu, Mandriva, MacOSX, ...)
+SYS=Ubuntu
+
+# Now run the appropriate version
+$LIB/scripts/NiCadPair-$SYS $LIB $*

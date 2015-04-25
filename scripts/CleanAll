@@ -1,0 +1,48 @@
+#!/bin/bash 
+# Usage:  CleanAll systems-directory
+
+if [ ! -d "$1" ]
+then
+    dir=.
+else
+    dir="$1"
+fi
+
+echo "Warning, this will remove all previous NiCad extraction and clone analysis results from ${1}"
+echo -n "Are you certain you want to do this (y/n)? "
+read yesno
+if [ "${yesno}" != "y" ]
+then
+    exit
+fi
+
+echo "Removing intermediate parsing files ..."
+find ${dir} | grep '\.pyindent$' | xargs /bin/rm -f
+find ${dir} | grep '\.ifdefed$' | xargs /bin/rm -f
+
+echo "Removing extracted potential clone files ..."
+find ${dir} | grep '_functions.*.xml$' | xargs /bin/rm -f
+find ${dir} | grep '_blocks.*.xml$' | xargs /bin/rm -f
+find ${dir} | grep '_classes.*.xml$' | xargs /bin/rm -f
+find ${dir} | grep '_systems.*.xml$' | xargs /bin/rm -f
+find ${dir} | grep '_models.*.xml$' | xargs /bin/rm -f
+find ${dir} | grep '_functions$' | xargs /bin/rm -rf
+find ${dir} | grep '_blocks$' | xargs /bin/rm -rf
+find ${dir} | grep '_classes$' | xargs /bin/rm -rf
+find ${dir} | grep '_systems$' | xargs /bin/rm -rf
+find ${dir} | grep '_models$' | xargs /bin/rm -rf
+
+echo "Removing previous clone detection results ..."
+find ${dir} | grep '_functions.*-clones$' | xargs /bin/rm -rf
+find ${dir} | grep '_blocks.*-clones$' | xargs /bin/rm -rf
+find ${dir} | grep '_classes.*-clones$' | xargs /bin/rm -rf
+find ${dir} | grep '_systems.*-clones$' | xargs /bin/rm -rf
+find ${dir} | grep '_models.*-clones$' | xargs /bin/rm -rf
+find ${dir} | grep '_functions.*-clonepairs$' | xargs /bin/rm -rf
+find ${dir} | grep '_blocks.*-clonepairs$' | xargs /bin/rm -rf
+find ${dir} | grep '_classes.*-clonepairs$' | xargs /bin/rm -rf
+find ${dir} | grep '_systems.*-clonepairs$' | xargs /bin/rm -rf
+find ${dir} | grep '_models.*-clonepairs$' | xargs /bin/rm -rf
+find ${dir} | grep '\.log$' | xargs /bin/rm -f
+
+echo "Done."

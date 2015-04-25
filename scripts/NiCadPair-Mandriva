@@ -1,0 +1,498 @@
+#!/bin/bash 
+# Generic NiCad3 extract and find clones script
+# J.R. Cordy, Queen's University, April 2010
+
+usage() {
+    echo "Usage:  NiCad3 granularity language systems/systemdir [ config ]"
+    echo "          where granularity is one of:  { functions blocks ... }"
+    echo "          and   language    is one of:  { c java cs py ... }"
+    echo "          and   config      is one of:  { blindrename ... }"
+    echo ""
+}
+
+echo ""
+echo "NiCad3 Clone Detector v3.5 (19 Mar 2013)"
+echo ""
+
+# check we have TXL
+txlversion=`txl -V 2>&1 | grep 10.[56]`
+if [ "${txlversion}" = "" ]
+then
+    echo "*** Error:  NiCad3 requires FreeTXL 10.5i or later"
+    echo ""
+    exit 99
+fi
+
+# check we have an installation
+if [ -d "$1" ]
+then
+    lib="$1"
+    shift
+else
+    lib=.
+fi
+
+if [ ! -d ${lib}/tools ]
+then
+    echo "*** Error:  cannot find NiCad3 installation ${lib}"
+    echo ""
+    exit 99
+fi
+ 
+# check we compiled the tools
+if [ ! -x ${lib}/tools/clonepairs.x ]
+then
+    echo "*** Error:  Missing ${lib}/tools/clonepairs.x - type 'make' to make the NiCad3 tools"
+    echo ""
+    exit 99
+fi
+
+# check granularity
+if [ "$1" != "" ]
+then
+    granularity=$1
+    shift
+else
+    usage
+    exit 99
+fi
+
+# check language
+if [ "$1" != "" ]
+then
+    language=$1
+    shift
+else
+    usage
+    exit 99
+fi
+
+# check we have a system directory
+if [ -d "$1" ]
+then
+    system=$1
+    shift
+else
+    usage
+    exit 99
+fi
+
+# check for a configuration
+if [ "$1" = "" ]
+then
+    config=${lib}/config/default.cfg
+else
+    config=${lib}/config/$1.cfg
+fi
+
+if [ ! -s "${config}" ]
+then
+    usage
+    exit 99
+fi
+
+echo "config=${config}"
+
+# get NiCad3 configuration parameters
+source ${config}
+
+echo "system=${system}"
+echo "threshold=${threshold}"
+echo "granularity=${granularity}"
+echo "language=${language}"
+echo "transform=${transform}"
+echo "rename=${rename}"
+echo "filter=${filter}"
+echo "abstract=${abstract}"
+echo "normalize=${normalize}"
+echo "cluster=${cluster}"
+echo "report=${report}"
+echo ""
+
+# Check we have a system
+if [ ! -d "${system}" ]
+then
+    echo "*** ERROR: Can't find system source directory ${system}"
+    exit 99
+fi
+
+# Extract potential clones
+date
+datestamp=`date +%F-%T`
+echo ""
+
+if [ -s "${system}_${granularity}.xml" ]
+then
+    echo "Using previously extracted ${granularity} from ${language} files in ${system}"
+    echo > ${system}_${granularity}-clones-${datestamp}.log 2>&1
+else
+    echo "Extracting ${granularity} from ${language} files in ${system}"
+    /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/Extract ${granularity} ${language} ${system} > ${system}_${granularity}-clones-${datestamp}.log 2>&1
+    echo ""
+    /bin/cat /tmp/time$$
+fi
+
+result=$?
+echo ""
+
+if [ $result -ge 99 ]
+then
+    echo "*** ERROR: Extraction failed, code $result"
+    echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+    echo ""
+    exit 99
+fi
+
+
+# Check for parsing problems
+syntaxerrors=`(grep "TXL019[12]E" ${system}_${granularity}-clones-${datestamp}.log | wc -l)`
+if [ ${syntaxerrors} != 0 ]
+then
+    if [ ${syntaxerrors} = 1 ]
+    then
+	echo "*** Warning: 1 source file failed to parse"
+    else
+	echo "*** Warning: ${syntaxerrors} source files failed to parse"
+    fi
+    echo ""
+fi
+
+npcs=`grep "^<source " ${system}_${granularity}.xml | wc -l`
+echo "Extracted ${npcs} ${granularity}"
+echo ""
+
+pcfile=${system}_${granularity}
+
+# Check for transformation to be done
+if [ "${transform}" != none ]
+then
+    if [ -s "${pcfile}-${transform}.xml" ]
+    then
+	echo "Using previously ${transform} transformed extracted ${granularity} from ${language} files in ${system}"
+    else
+	echo "Applying ${transform} transformation to extracted ${granularity} from ${language} files in ${system}"
+	/usr/bin/time --output=/tmp/time$$ ${lib}/scripts/Transform ${granularity} ${language} ${pcfile}.xml ${transform} >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+	echo ""
+	/bin/cat /tmp/time$$
+    fi
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+        echo "*** ERROR: Renaming failed, code $result"
+        echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+        echo ""
+        exit 99
+    fi
+
+    pcfile=${pcfile}-${transform}
+fi
+
+# Check for renaming to be done
+if [ "${rename}" != none ]
+then
+    if [ -s "${pcfile}-${rename}.xml" ]
+    then
+	echo "Using previously ${rename} renamed extracted ${granularity} from ${language} files in ${system}"
+    else
+	echo "Applying ${rename} renaming to extracted ${granularity} from ${language} files in ${system}"
+	/usr/bin/time --output=/tmp/time$$ ${lib}/scripts/Rename ${granularity} ${language} ${pcfile}.xml ${rename} >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+    fi
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+        echo "*** ERROR: Renaming failed, code $result"
+        echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+        echo ""
+        exit 99
+    fi
+
+    pcfile=${pcfile}-${rename}
+fi
+
+# Check for filtering to be done
+if [ "${filter}" != none ]
+then
+    if [ -s "${pcfile}-filter.xml" ]
+    then
+	echo "Using previously filtered extracted ${granularity} from ${language} files in ${system}"
+    else
+	echo "Applying filtering of ${filter} to extracted ${granularity} from ${language} files in ${system}"
+	/usr/bin/time --output=/tmp/time$$ ${lib}/scripts/Filter ${granularity} ${language} ${pcfile}.xml ${filter} >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+    fi
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+        echo "*** ERROR: Filtering failed, code $result"
+        echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+        echo ""
+        exit 99
+    fi
+
+    pcfile=${pcfile}-filter
+fi
+
+# Check for abstraction to be done
+if [ "${abstract}" != none ]
+then
+    if [ -s "${pcfile}-abstract.xml" ]
+    then
+	echo "Using previously abstracted extracted ${granularity} from ${language} files in ${system}"
+    else
+	echo "Applying abstraction of ${abstract} to extracted ${granularity} from ${language} files in ${system}"
+	/usr/bin/time --output=/tmp/time$$ ${lib}/scripts/Abstract ${granularity} ${language} ${pcfile}.xml ${abstract} >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+    fi
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+        echo "*** ERROR: Abstraction failed, code $result"
+        echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+        echo ""
+        exit 99
+    fi
+
+    pcfile=${pcfile}-abstract
+fi
+
+# Check for custom normalization to be done
+if [ "${normalize}" != none ]
+then
+    if [ -s "${pcfile}-normalize.xml" ]
+    then
+	echo "Using previously normalized extracted ${granularity} from ${language} files in ${system}"
+    else
+	echo "Applying custom normalization ${normalize} to extracted ${granularity} from ${language} files in ${system}"
+	/usr/bin/time --output=/tmp/time$$ ${lib}/scripts/Normalize ${granularity} ${language} ${pcfile}.xml ${normalize} >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+    fi
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+        echo "*** ERROR: Custom normalization failed, code $result"
+        echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+        echo ""
+        exit 99
+    fi
+
+    pcfile=${pcfile}-normalized
+fi
+
+# Find near-miss clones
+echo "Finding clones between ${minsize} and ${maxsize} lines at UPI threshold ${threshold}"
+/usr/bin/time --output=/tmp/time$$ ${lib}/scripts/FindClonePairs ${pcfile}.xml ${threshold} ${minsize} ${maxsize} >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+echo ""
+/bin/cat /tmp/time$$
+
+result=$?
+echo ""
+
+if [ $result != 0 ]
+then
+echo "*** ERROR: Clone analysis failed, code $result"
+echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+echo ""
+exit 99
+fi
+
+grep "^Found " ${system}_${granularity}-clones-${datestamp}.log | tail -1
+echo ""
+
+if [ "${cluster}" == "yes" ]
+then
+    # Compute clone classes
+    echo "Clustering clone pairs into classes"
+    /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/ClusterPairs ${pcfile}-clones/*-clones-0.[0-9].xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+    echo ""
+    /bin/cat /tmp/time$$
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+	echo "*** ERROR: Clustering failed, code $result"
+	echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	echo ""
+	exit 99
+    fi
+
+    grep "^Clustered " ${system}_${granularity}-clones-${datestamp}.log | tail -1
+    echo ""
+fi
+
+if [ "${report}" == "yes" ]
+then
+    # Get original sources
+    echo "Getting original sources for all clones"
+    /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/GetSource ${pcfile}-clones/*-clones-0.[0-9].xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+    echo ""
+    /bin/cat /tmp/time$$
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+	echo "*** ERROR: Get sources failed, code $result"
+	echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	echo ""
+	exit 99
+    fi
+
+    if [ "${cluster}" == "yes" ]
+    then
+        /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/GetSource ${pcfile}-clones/*-clones-0.[0-9]-classes.xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+
+        result=$?
+        echo ""
+
+        if [ $result != 0 ]
+        then
+	    echo "*** ERROR: Get sources failed, code $result"
+	    echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	    echo ""
+	    exit 99
+        fi
+    fi
+
+    # Convert to HTML
+    echo "Making HTML reports"
+    /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/MakePairHTML ${pcfile}-clones/*-clones-0.[0-9]-withsource.xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+    echo ""
+    /bin/cat /tmp/time$$
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+	echo "*** ERROR: Make HTML failed, code $result"
+	echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	echo ""
+	exit 99
+    fi
+
+    if [ "${cluster}" == "yes" ]
+    then
+        /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/MakePairHTML ${pcfile}-clones/*-clones-0.[0-9]-classes-withsource.xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+
+        result=$?
+        echo ""
+
+        if [ $result != 0 ]
+        then
+	    echo "*** ERROR: Make HTML failed, code $result"
+	    echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	    echo ""
+	    exit 99
+        fi
+    fi
+
+elif [ "${report}" == "normalized" ]
+then
+    # Get normalized sources
+    echo "Getting normalized sources for all clones"
+    /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/GetNormSource ${pcfile}-clones/*-clones-0.[0-9].xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+    echo ""
+    /bin/cat /tmp/time$$
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+	echo "*** ERROR: Get normalized sources failed, code $result"
+	echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	echo ""
+	exit 99
+    fi
+
+    if [ "${cluster}" == "yes" ]
+    then
+        /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/GetNormSource ${pcfile}-clones/*-clones-0.[0-9]-classes.xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+
+        result=$?
+        echo ""
+
+        if [ $result != 0 ]
+        then
+	    echo "*** ERROR: Get normalized sources failed, code $result"
+	    echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	    echo ""
+	    exit 99
+        fi
+    fi
+
+    # Convert to HTML
+    echo "Making HTML reports"
+    /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/MakePairHTML ${pcfile}-clones/*-clones-0.[0-9]-normsource.xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+    echo ""
+    /bin/cat /tmp/time$$
+
+    result=$?
+    echo ""
+
+    if [ $result != 0 ]
+    then
+	echo "*** ERROR: Make HTML failed, code $result"
+	echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	echo ""
+	exit 99
+    fi
+
+    if [ "${cluster}" == "yes" ]
+    then
+        /usr/bin/time --output=/tmp/time$$ ${lib}/scripts/MakePairHTML ${pcfile}-clones/*-clones-0.[0-9]-classes-normsource.xml >> ${system}_${granularity}-clones-${datestamp}.log 2>&1
+        echo ""
+        /bin/cat /tmp/time$$
+
+        result=$?
+        echo ""
+
+        if [ $result != 0 ]
+        then
+	    echo "*** ERROR: Make HTML failed, code $result"
+	    echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+	    echo ""
+	    exit 99
+        fi
+    fi
+fi
+
+# Finish up
+/bin/rm -f /tmp/time$$
+
+echo "Done."
+echo ""
+echo "Detailed log in ${system}_${granularity}-clones-${datestamp}.log"
+echo "Results in ${pcfile}-clones"
+echo ""
+date
+echo ""

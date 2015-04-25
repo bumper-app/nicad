@@ -1,0 +1,79 @@
+QUICK START
+-----------
+
+This readme serves as a quick start, please use `man monit' for
+documentation on the program.
+
+
+Installation:
+-------------
+
+  -  ./configure
+  -  make
+  -  make install
+  -  man monit
+
+This will install monit and the man-file in /usr/local/bin and
+/usr/local/man/man1 respectively. If you want another location than
+/usr/local, run configure with the prefix options, like so:
+./configure --prefix=<dir>
+
+
+Notes:
+------
+
+- This directory contains an example monit control file, called
+  monitrc. Please read it and use it as a starting point when you
+  write your own monit control file.
+
+- monit will probably work on most Unix systems. However, monit is
+  tested and known to compile and operate on; Linux, FreeBSD, OpenBSD
+  and Solaris. See also the PLATFORMS file.
+
+- If you are upgrading from a previous monit version and experience
+  problems with the monit control file, please consult the UPGRADE.txt
+  file accompanying the software.
+
+
+License Notes:
+--------------
+
+This software product is licensed under the GNU General Public License
+(GPL). This license gives you the freedom to use this product and have
+access to the source code. You can modify this product as you see fit
+and even use parts in your own software. If you choose to do so, you
+also choose to accept that a modified product or software that use any
+code from monit MUST also be licensed under the GNU General Public
+License.
+
+In plain words, you can NOT sell or distribute monit, a modified
+version or any software product based on any parts of monit as a
+closed source product. Likewise you cannot re-license this product and
+derivates under another license other than GNU GPL.
+
+See also the article, "Free Software Matters: Enforcing the GPL" by
+Eben Moglen. http://emoglen.law.columbia.edu/publications/lu-13.html
+
+
+Product Support:
+----------------
+
+If you have questions or comments about the software or documentation
+please subscribe to the monit general mailing list:
+
+   http://mail.freesoftware.fsf.org/mailman/listinfo/monit-general
+
+You can also look in the mailing list archive for answers:
+
+      http://mail.freesoftware.fsf.org/pipermail/monit-general/
+
+
+Professional support and contract development:
+----------------------------------------------
+
+The developers behind monit provides contract support and contract
+development for monit. If you are looking for this kind of services
+please visit us at: http://www.tildeslash.com/monit/services.html.
+
+
+          ---------------------------------------------

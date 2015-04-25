@@ -1,0 +1,87 @@
+
+<HTML>
+
+<HEAD>
+<META HTTP-EQUIV="Context-Type" CONTEXT="text/html;charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft Internet Assistant for PowerPoint 97">
+ <TITLE>Observer  </TITLE> 
+</HEAD>
+
+<BODY     >
+
+ <H1>Observer  </H1> 
+ <P><UL>
+<LI><H2>Intent	
+</H2>
+<UL>
+	Define a dependency between objects so that when one object changes state then all its dependents are notified
+<BR></UL></UL><UL>
+<LI><H2>Applicability 
+</H2>
+<UL>
+<LI>When a change to one object requires changing others
+<LI>Decouple notifier from other objects
+</UL></UL><UL>
+<LI><H2>Structure </H2>
+</UL></P>
+<P><UL>
+Subject
+<BR></UL><UL>
+
+</UL><UL>
+attach()
+</UL><UL>
+detach()
+</UL><UL>
+notify()</UL></P>
+<P><UL>
+Observer
+<BR></UL><UL>
+
+</UL><UL>
+update()</UL></P>
+<P><UL>
+ConcreteObserver
+<BR></UL><UL>
+
+</UL><UL>
+update()</UL></P>
+<P><UL>
+ConcreteSubject
+<BR></UL><UL>
+
+</UL><UL>
+getState()
+</UL><UL>
+setState()</UL></P>
+<P><UL>
+observers<BR></UL></P>
+<P><UL>
+while (e.hasMoreElements())
+<BR></UL><UL>
+  Observer o = (Observer)
+</UL><UL>
+           e.nextElement();
+</UL><UL>
+  o.update(this);</UL></P>
+<P><UL>
+state = newState;
+<BR></UL><UL>
+notify();</UL></P>
+<P><UL>
+subject<BR></UL></P>
+<P></P> 
+<P>
+<TABLE>
+  <TD HEIGHT=100 WIDTH=100> <A HREF="tsld025.htm">Previous slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=100> <A HREF="tsld027.htm">Next slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=150> <A HREF="tsld001.htm">Back to first slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=150> <A HREF="sld026.htm">View graphic version</A> </TD>
+</TABLE>
+<BR>
+</P>
+
+
+
+</Body>
+</HTML>

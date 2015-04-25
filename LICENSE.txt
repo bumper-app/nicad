@@ -1,0 +1,35 @@
+NiCad3 clone detection system, Version 3.5 (10 Feb 2013)
+
+Software Technology Laboratory, Queen's University
+April 2010 (Revised February 2013)
+
+Copyright 2011-2013, J.R. Cordy & C.K. Roy
+
+NiCad3 and its supporting materials are Copyright 2013 by James R. Cordy 
+and Chanchal K. Roy (the "Authors") under the copyright laws of Canada 
+and international copyright agreements with the United States and other 
+countries signatory to the Berne Convention and/or the Universal Copyright 
+Convention (1971 Paris text).
+
+NiCad3 is provided FREE OF CHARGE for the USE of individuals, companies 
+and institutions PROVIDED that proper ACKNOWLEDGEMENT OF USE of NiCad3 
+is made in all published work deriving from or depending upon such use.
+
+NiCad3 is provided on an AS-IS BASIS, in the hope that it may be useful, 
+but WITHOUT ANY WARRANTY, including WITHOUT ANY IMPLIED WARRANTY AS TO 
+ITS MERCHANTABILITY OR SUITABILITY FOR ANY PARTICULAR PURPOSE.
+
+IN NO EVENT SHALL the Copyright Holder OR the Author BE HELD LIABLE for 
+any direct, indirect, incidental, special, exemplary, or consequential 
+damages (INCLUDING, BUT NOT LIMITED TO, procurement of substitute goods 
+or services; loss of use, data or profits; or business interruption) 
+HOWEVER CAUSED in on any theory of liability, whether in contract, 
+strict liability, or tort (INCLUDING negligence or otherwise) arising 
+IN ANY WAY out of the use of this software, EVEN IF ADVISED of the 
+possibility of such damage.
+
+Permission to copy and redistribute NiCad3 is hereby granted PROVIDED that 
+the NiCad3 distribution is RETAINED UNMODIFIED IN ITS ENTIRETY including 
+this file, and that NO CHARGE OF ANY KIND is made for such redistribution.
+
+(Rev 10.2.13)

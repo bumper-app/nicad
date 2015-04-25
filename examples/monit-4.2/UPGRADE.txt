@@ -1,0 +1,152 @@
+                         How to Upgrade Monit
+                         --------------------
+
+
+This document describes how to change the configuration files of monit
+in case monit is upgraded.  Further changes and addition are described
+in CHANGES.txt.
+
+From monit 3.2 to monit 4.0:
+===========================
+
+Monit 4.0 supports file, device, directory and host checks in addition
+to process checks. Thus, the CHECK statement has changed:
+
+   Old syntax: CHECK servicename
+
+   New syntax: CHECK [PROCESS|DEVICE|DIRECTORY|FILE|HOST] servicename
+
+The old CHECK syntax without "PROCESS" token is still usable but
+depreciated. Future versions might not support this.
+
+------------------------------------------------------------------------------
+
+The CHECKSUM statement can now only be used in a check file
+entry. Usage of this statements in a check process service entry is
+obsolete from this release. In addition, the syntax has changed:
+
+ Old syntax: CHECKSUM path [EXPECT checksum] [path [EXPECT checksum]]+
+
+ New syntax: IF FAILED CHECKSUM [EXPECT checksum] THEN action
+
+
+ Old syntax example:
+
+      check process apache with pidfile /usr/local/apache/logs/httpd.pid
+	    ...
+	    checksum /usr/local/apache/bin/httpd
+		     and expect 8f7f419955cefa0b33a2ba316cba3659
+
+ New syntax example:
+
+      check process apache with pidfile /usr/local/apache/logs/httpd.pid
+	    ...
+	    depends on httpd_bin
+    
+      check file httpd_bin with path /usr/local/apache/bin/httpd
+	    if failed checksum and expect 8f7f419955cefa0b33a2ba316cba3659
+	       then unmonitor
+
+------------------------------------------------------------------------------
+
+The TIMESTAMP statement can now only be used in a check file
+entry. Usage of this statements in a check process service entry is
+obsolete from this release. In addition, the syntax has changed:
+
+ Old syntax: IF TIMESTAMP path [operator] value [unit] THEN action 
+
+ New syntax: IF TIMESTAMP [operator] value [unit] THEN action
+
+             or
+
+             IF TIMESTAMP was CHANGED THEN action
+
+ Old syntax example:
+
+      check process apache with pidfile /usr/local/apache/logs/httpd.pid
+	    ...
+	    if timestamp /usr/local/etc/httpd.conf < 1 hour then restart
+
+ New syntax example:
+
+      check process apache with pidfile /usr/local/apache/logs/httpd.pid
+	    start program = "/etc/init.d/httpd start"
+	    stop program  = "/etc/init.d/httpd stop"
+	    depends on httpd_conf
+    
+      check file httpd_conf with path /usr/local/etc/httpd.conf
+	    if timestamp changed then restart
+
+------------------------------------------------------------------------------
+
+The PORT statement has changed and now requires that an explicit
+action is specified if the connection test should fail. The old
+statement would blindly restart the service if a port connection test
+failed, the new version allows you to choose an action from the set,
+ALERT, STOP, RESTART, UNMONITOR or EXEC.
+
+ Old syntax:  [HOST hostname] PORT number [TYPE {...}] 
+                [PROTO(COL) {name} [REQUEST {"/path"}]]
+
+ New syntax:  IF FAILED [HOST hostname] PORT number [TYPE {...}] 
+                 [PROTO(COL) {name} [REQUEST {"/path"}]]
+                 [with TIMEOUT x SECONDS]
+              THEN action
+
+ Old syntax example:
+      check process apache with pidfile /usr/local/apache/logs/httpd.pid
+            ...
+	    host nettvenn.sol.no port 80 proto http 
+
+ New syntax example:
+      check process apache with pidfile /usr/local/apache/logs/httpd.pid
+            ...
+	    if failed host nettvenn.sol.no port 80 proto http 
+	       then restart
+
+------------------------------------------------------------------------------
+
+The DEPENDS statement has changed.  The services are from now on comma
+separated:
+
+   Old syntax: DEPENDS service [service [...]]
+
+   New syntax: DEPENDS service[, service [,...]]
+ 
+------------------------------------------------------------------------------
+
+The CPU and memory check syntax has been simplified.  The new syntax
+has only the tokens CPU and MEM and the syntax is also changed to
+become a real IF-THEN statement:
+
+
+   Old syntax: CPUUSAGE value [cycles] action
+               MEMUSAGE value [cycles] action
+               MEMKBYTE value [cycles] action
+
+   New syntax: IF CPU operator value unit [cycles] THEN action
+               IF MEM operator value unit [cycles] THEN action
+
+The "operator" token is still a choice of {<|>|==|!=} or in words
+{less|greater|equal|notequal}; value is a choice of an integer number
+or a real number (using a dot); unit is {%|PERCENT} for CPU and a
+choice of {%|B|KB|MB|GB} or in words {PERCENT|BYTE|KILOBYTE|
+MEGABYTE|GIGABYTE}; "cycles" still refers to the number of cycles the
+statement has to be true in order to start the "action".  Example:
+    
+    if MEM > 2.5 MB for 5 cycles then RESTART
+
+    And not specifying a cycle means implicit 1 cycle:
+    if MEM > 25% then RESTART
+
+The old syntax using CPUUSAGE, MEMUSAGE, MEMKBYTE is obsolete and no
+longer supported.
+
+------------------------------------------------------------------------------
+
+The $PROGRAM tag used in a mail-format statement was renamed to
+$SERVICE without changing its meaning.  $PROGRAM is still usable but
+depreciated.  Future versions might not support it anymore.
+
+------------------------------------------------------------------------------
+

@@ -1,0 +1,65 @@
+Manifest-Version: 1.0
+Created-By: Ant 1.4
+
+Name: CH/ifa/draw/applet/
+Sealed: true
+Specification-Title: JHotDraw Default Applet
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.applet
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org
+
+Name: CH/ifa/draw/application/
+Sealed: true
+Specification-Title: JHotDraw Default Application
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.application
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org
+
+Name: CH/ifa/draw/contrib/
+Sealed: true
+Specification-Title: JHotDraw Contributions
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.contrib
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org
+
+Name: CH/ifa/draw/figures/
+Sealed: true
+Specification-Title: JHotDraw Figures
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.figures
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org
+
+Name: CH/ifa/draw/framework/
+Sealed: true
+Specification-Title: JHotDraw Core Framework
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.framework
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org
+
+Name: CH/ifa/draw/standard/
+Sealed: true
+Specification-Title: JHotDraw Standard Implementation
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.standard
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org
+
+Name: CH/ifa/draw/util/
+Sealed: true
+Specification-Title: JHotDraw Utilities
+Specification-Version: 5.4
+Specification-Vendor: http://www.jhotdraw.org
+Implementation-Title: CH.ifa.draw.util
+Implementation-Version: 5.4
+Implementation-Vendor: http://www.jhotdraw.org

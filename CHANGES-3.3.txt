@@ -1,0 +1,4 @@
+Changes from NiCad 3.2 in 3.3
+
+1. Updates and corrections to all language extractors
+   to improve robustness and performance.	

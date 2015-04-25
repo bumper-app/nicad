@@ -1,0 +1,343 @@
+%% WSDL Grammar v0.7
+%% Douglas Martin
+%% Queen's University
+%% June 2009
+
+%% Changelog
+%% Deconstructed Schemas into complexTypes and simpleTypes
+
+#pragma -case -w 32000
+
+tokens 
+    id     |    "\a[-\i]*"
+end tokens
+
+comments
+    <!--  -->
+    <xs:annotation> </xs:annotation>
+    <documentation  </documentation>
+    <wsdl:documentation  </wsdl:documentation>
+    <xs:documentation  </xs:documentation>
+    <xsd:documentation  </xsd:documentation>
+end comments
+
+define program 
+    [opt xml_def]
+    [definitions_or_description]
+end define
+
+define xml_def
+    [SPOFF] '<?xml [attribute_list] '?> [SPON]                 [NL]
+end define 
+
+define definitions_or_description
+        [definitions]        %% for WSDL 1.1
+    |   [description]        %% for WSDL 2.0
+end define
+
+define prefix
+        'soap:
+    |   'xs:
+    |   'xmlns:
+    |   'wsdl:
+    |   'mime:
+    |   'http:
+    |   [id] ':                %% others?
+end define
+
+define attribute_list
+    [repeat attribute]
+end define
+
+define attribute
+        [name_attr]
+    |   [target_namespace_attr]
+    |   [type_attr]
+    |   [element_attr]
+    |   [message_attr]
+    |   [xmlns_attr]
+    |   [basic_attr]
+end define
+
+define name_attr
+    [SP] [opt prefix] 'name = [stringlit] 
+end define
+
+define target_namespace_attr
+    [SP] [opt prefix] 'targetNamespace = [stringlit] 
+end define
+
+define element_attr
+    [SP] [opt prefix] 'element = [stringlit] 
+end define
+
+define type_attr
+    [SP] [opt prefix] 'type = [stringlit] 
+end define
+
+define message_attr
+    [SP] [opt prefix] 'message = [stringlit] 
+end define
+
+define xmlns_attr
+    [SP] 'xmlns: [id] = [stringlit]
+end define 
+
+define basic_attr
+    [SP] [opt prefix] [id] = [stringlit] 
+end define
+
+% WSDL 1.1
+define definitions
+    [SPOFF] '< [opt prefix] 'definitions [opt attribute_list] '> [SPON]     [NL][IN]
+        [repeat top_level_elements]                                         [EX]
+    [SPOFF] '</ [opt prefix] 'definitions> [SPON]                           [NL]
+end define
+
+% WSDL 2.0
+define description
+    [SPOFF] '< [opt prefix] 'description [opt attribute_list] '> [SPON]     [NL][IN]
+        [repeat top_level_elements]                                         [EX]
+    [SPOFF] '</ [opt prefix] 'description> [SPON]                           [NL]
+end define
+
+define import_or_include
+        [import_element]
+    |   [include_element]
+end define
+
+define import_element
+        [SPOFF] '< [opt prefix] 'import [opt attribute_list] '/> [SPON]     [NL]
+    |   [SPOFF] '< [opt prefix] 'import [opt attribute_list] '> '</'import> [SPON]   [NL]
+end define
+
+define include_element
+        [SPOFF] '< [opt prefix] 'include [opt attribute_list] '/> [SPON]    [NL]
+    |   [SPOFF] '< [opt prefix] 'include [opt attribute_list] '> '</'include> [SPON]    [NL]
+end define
+
+define types 
+    [SPOFF] '< [opt prefix] 'types [opt attribute_list] '> [SPON]           [NL][IN]
+        [repeat types_scope]                                                [EX]
+    [SPOFF] '</ [opt prefix] 'types> [SPON]                                 [NL]
+end define    
+
+define schema
+        [SPOFF] '< [opt prefix] 'schema [opt attribute_list] '> [SPON]      [NL][IN]
+            [repeat schema_scope]                                           [EX]
+        [SPOFF] '</ [opt prefix] 'schema> [SPON]                            [NL]
+    |   [SPOFF] '< [opt prefix] 'schema [opt attribute_list] '/> [SPON]     [NL]
+end define
+
+define complex_type
+    [SPOFF] '< [opt prefix] 'complexType [opt attribute_list] '> [SPON]     [NL][IN]
+        [repeat schema_scope]                                               [EX]
+    [SPOFF] '</ [opt prefix] 'complexType> [SPON]                           [NL]
+end define 
+
+define simple_type
+    [SPOFF] '< [opt prefix] 'simpleType [opt attribute_list] '> [SPON]      [NL][IN]
+        [repeat schema_scope]                                               [EX]
+    [SPOFF] '</ [opt prefix] 'simpleType> [SPON]                            [NL]
+end define 
+
+define schema_element
+        [SPOFF] '< [opt prefix] 'element [opt attribute_list] '/>  [SPON]   [NL]
+    |   [SPOFF] '< [opt prefix] 'element [opt attribute_list] '> [SPON]     [NL][IN]
+            [repeat schema_scope]                                           [EX]
+        [SPOFF] '</ [opt prefix] 'element> [SPON]                           [NL]
+end define
+
+define sequence
+        [SPOFF] '<'sequence> [SPON]                                         [NL][IN]
+            [repeat schema_scope]                                           [EX]
+        [SPOFF] '</'sequence> [SPON]                                        [NL]
+    |   [SPOFF] '</'sequence> [SPON]                                        [NL]
+end define 
+
+define message
+    [SPOFF] '< [opt prefix] 'message [opt attribute_list] [SPON] '>         [NL][IN]
+        [repeat message_scope]                                              [EX]
+    [SPOFF] '</ [opt prefix] 'message> [SPON]                               [NL]
+end define
+
+define part
+        [SPOFF] '< [opt prefix] 'part [opt attribute_list] '/>  [SPON]      [NL]
+    |   [SPOFF] '< [opt prefix] 'part [opt attribute_list] '> [SPON]        [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'part> [SPON]                              [NL]
+end define
+
+define binding
+        [SPOFF] '< [opt prefix] 'binding [opt attribute_list] [SPON] '>     [NL][IN]
+            [repeat binding_scope]                                          [EX]
+        [SPOFF] '</ [opt prefix] 'binding> [SPON]                           [NL]
+    |   [SPOFF] '< [opt prefix] 'binding [opt attribute_list] '/> [SPON]    [NL]
+end define
+
+define service
+    [SPOFF] '< [opt prefix] 'service [opt attribute_list] [SPON] '>         [NL][IN]
+        [repeat service_scope]                                              [EX]
+    [SPOFF] '</ [opt prefix] 'service> [SPON]                               [NL]
+end define    
+
+define port
+        [SPOFF] '< [opt prefix] 'port [opt attribute_list] [SPON] '>        [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'port> [SPON]                              [NL]
+    |   [SPOFF] '< [opt prefix] 'port [opt attribute_list] '/> [SPON]       [NL]
+end define
+
+define port_type
+    [SPOFF] '< [opt prefix] 'portType [opt attribute_list] [SPON] '>        [NL][IN]
+        [repeat operation]                                                  [EX]
+    [SPOFF] '</ [opt prefix] 'portType> [SPON]                              [NL]
+end define
+
+define operation 
+        [SPOFF] '< [opt prefix] 'operation [opt attribute_list] [SPON] '>   [NL][IN]
+            [repeat operation_scope]                                        [EX]
+        [SPOFF] '</ [opt prefix] 'operation> [SPON]                         [NL]
+    |   [SPOFF] '< [opt prefix] 'operation [opt attribute_list] '/> [SPON]  [NL]
+end define
+
+define input
+        [SPOFF] '< [opt prefix] 'input [opt attribute_list] '> [SPON]       [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'input> [SPON]                             [NL]
+    |   [SPOFF] '< [opt prefix] 'input [opt attribute_list] '/> [SPON]      [NL]
+end define
+
+define output
+        [SPOFF] '< [opt prefix] 'output [opt attribute_list] '> [SPON]      [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'output> [SPON]                            [NL]
+    |   [SPOFF] '< [opt prefix] 'output [opt attribute_list] '/> [SPON]     [NL]
+end define
+
+define infault
+        [SPOFF] '< [opt prefix] 'infault [opt attribute_list] '> [SPON]     [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'infault> [SPON]                           [NL]
+    |   [SPOFF] '< [opt prefix] 'infault [opt attribute_list] '/> [SPON]    [NL]
+end define
+
+define outfault
+        [SPOFF] '< [opt prefix] 'outfault [opt attribute_list] '> [SPON]    [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'outfault> [SPON]                          [NL]
+    |   [SPOFF] '< [opt prefix] 'outfault [opt attribute_list] '/> [SPON]   [NL]
+end define
+
+define fault 
+        [SPOFF] '< [opt prefix] 'fault [opt attribute_list] '> [SPON]       [NL][IN]
+            [repeat element]                                                [EX]
+        [SPOFF] '</ [opt prefix] 'fault> [SPON]                             [NL]
+    |   [SPOFF] '< [opt prefix] 'fault [opt attribute_list] '/> [SPON]      [NL]
+end define
+
+define interface 
+        [SPOFF] '< [opt prefix] 'interface [opt attribute_list] '> [SPON]   [NL][IN]
+            [repeat interface_scope]                                        [EX]
+        [SPOFF] '</ [opt prefix] 'interface> [SPON]                         [NL]
+    |   [SPOFF] '< [opt prefix] 'interface [opt attribute_list] '/> [SPON]  [NL]
+end define
+
+define top_level_elements
+        [import_or_include]
+    |   [types]
+    |   [service]
+    |    [message]
+    |   [port_type]
+    |   [binding]
+    |   [interface]
+    |   [element]
+end define
+
+define    types_scope
+        [schema]
+    |   [element]
+end define
+
+define schema_scope
+        [schema_element]
+    |   [sequence]
+    |   [complex_type]
+    |   [simple_type]
+    |   [element]
+end define 
+
+define message_scope
+        [part]
+    |   [element]
+end define
+
+define operation_scope
+        [operation]
+    |   [input]
+    |   [output]
+    |   [infault]
+    |   [outfault]
+    |   [fault]    
+    |   [element]
+end define
+
+define binding_scope
+        [operation]
+    |   [element]
+end define
+
+define service_scope
+        [port]
+    |   [element]
+end define
+
+define interface_scope
+        [operation]
+    |   [fault]
+    |   [element]
+end define 
+
+define element
+        [definitions]
+    |   [import_or_include]
+    |   [types]
+    |   [schema]
+    |   [schema_element]
+    |   [complex_type]
+    |   [simple_type]
+    |   [service]
+    |   [interface]
+    |    [message]
+    |   [port_type]
+    |   [binding]
+    |   [operation]
+    |   [input]
+    |   [output]
+    |   [infault]
+    |   [outfault]
+    |   [fault]
+    |   [port]
+    |   [part]
+    |   [singleton_tag]        
+    |   [tag]
+end define
+
+define singleton_tag
+    [SPOFF] '< [opt prefix] [id] [attribute_list] '/> [SPON]                [NL]
+end define
+
+define tag
+    [begin_tag]                                                             [NL][IN]
+        [repeat element]                                                    [EX]
+    [end_tag]                                                               [NL]
+end define
+
+define begin_tag
+     [SPOFF] '< [opt prefix] [push id] [attribute_list] '> [SPON]                        
+end define
+
+define end_tag
+     [SPOFF] '</ [opt prefix] [pop id] '> [SPON] 
+end define
+

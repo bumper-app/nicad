@@ -1,0 +1,59 @@
+
+<HTML>
+
+<HEAD>
+<META HTTP-EQUIV="Context-Type" CONTEXT="text/html;charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft Internet Assistant for PowerPoint 97">
+ <TITLE>Observer in Java</TITLE> 
+</HEAD>
+
+<BODY     >
+
+ <H1>Observer in Java</H1> 
+ <P><UL>
+<LI><H2>Implementation in java.util
+</H2>
+<UL>
+<LI>notifyObservers is only triggered when Observable is marked as changed with setChanged()
+<LI>optimizes the case of a single Observer
+<UL>
+<LI>only allocate a list when there is more than one observer</UL></UL></UL></P>
+<P><UL>
+Observable
+<BR></UL><UL>
+
+</UL><UL>
+addObserver()
+</UL><UL>
+deleteObserver()
+</UL><UL>
+setChanged()
+</UL><UL>
+notifyObservers()</UL></P>
+<P><UL>
+Observer
+<BR></UL><UL>
+
+</UL><UL>
+update(sender, arg)</UL></P>
+<P><UL>
+ConcreteObserver<BR></UL></P>
+<P><UL>
+ConcreteObserverable<BR></UL></P>
+<P><UL>
+observers<BR></UL></P>
+<P></P> 
+<P>
+<TABLE>
+  <TD HEIGHT=100 WIDTH=100> <A HREF="tsld027.htm">Previous slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=100> <A HREF="tsld029.htm">Next slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=150> <A HREF="tsld001.htm">Back to first slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=150> <A HREF="sld028.htm">View graphic version</A> </TD>
+</TABLE>
+<BR>
+</P>
+
+
+
+</Body>
+</HTML>

@@ -1,0 +1,25 @@
+Changes from NiCad 3.0 in 3.1
+
+1. NiCad 3.0 reported clone classes (when requested by the
+   "cluster=yes" configuration parameter) as the largest set 
+   of clone pairs for which every source fragment is within 
+   the threshold distance of at least one other member of the set.
+
+   This leads to duplications of fragments in the report,
+   so now in NiCad 3.1 each fragement in the set is reported once
+   even though the definition of cluster remains the same. 
+
+   This means the format of the report has also changed,
+   instead of <class> elements containing <clone> pair elements,
+   the clustered results now report <class> elements directly
+   containing <source> elements.
+
+2. Refactored grammars to make common abstractions easier.
+   Abstraction nonterminals now supported for C, C#, Java, Python: 
+
+   block - all blocks, including function bodies
+   declaration - all data declarations
+   statement - all statements
+   expression - all expressions
+   condition - all if/while conditions
+   literal - all literal constant values

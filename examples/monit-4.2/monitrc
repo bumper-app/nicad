@@ -1,0 +1,360 @@
+# Monit control file
+#
+# Comments begin with a '#' and extend through the end of the line.
+# Blank lines between program entries are ignored. Keywords are case 
+# insensitive. All path's MUST BE FULLY QUALIFIED, starting with '/'
+#
+# Legal keywords are
+#   check          -- Must be followed by the type of monitored service
+#                     {device|directory|file|process} and a descriptive
+#                     name for the service.
+#
+#   pidfile        -- Must be followed by a path to a process pidfile.
+#                     Such a file should contain only one entry, a number
+#                     representing the process pid. (See the apache pid 
+#                     file for an example).
+#
+#   path           -- Must be followed by a path to the block special file
+#                     for filesystem (device), regular file or directory.
+#
+#   group          -- Must be followed by a descriptive name for a monitored
+#                     services group. This statement can be used to group 
+#                     together several services. Monit can start/stop/restart a
+#                     group of services.
+#                    
+#   start          -- Must be followed by a full path to a program for
+#                     starting the service. If you need to specify arguments
+#                     to the program, enclose the program and arguments in
+#                     quotes - like: "/local/bin/program -i start".
+#
+#   stop           -- Must be followed by a full path to a program for
+#                     stopping the service. If you need to specify arguments
+#                     to the program, enclose the program and arguments in
+#                     quotes - like: "/local/bin/program -i stop".
+#
+#   uid            -- Must be followed by a user (name or uid number). This 
+#                     statement is an optionally part of the start/stop
+#		      statement described above (if so, it makes monit start
+#                     the program as the user given in the uid). uid can also
+#                     be  used as a standalone statement in a file service 
+#                     check entry to check for changes in uid.
+#
+#   gid            -- Must be followed by a group (name or gid number). This 
+#                     statement is an optionally part of the start/stop
+#		      statement described above (if so, it makes monit start
+#                     the program as the group given in the gid). gid can also
+#                     be  used as a standalone statement in a file service 
+#                     check entry to check for changes in gid.
+#
+#   host           -- Specify a hostname or an ip-address to test port 
+#                     connection at. This statement must be followed by a
+#                     port statement.
+#
+#   port(number)   -- Must be followed by an integer representing a portnumber.
+#                     The monit program will try to connect to this port to
+#                     to verify that there is a server listening behind the 
+#                     portnumber. 
+#
+#   unix(socket)   -- Must be followed by a string representing a pathname.
+#                     The monit program will try to connect to this socket to
+#                     to verify that there is a server listening behind the 
+#                     unix socket. 
+#
+#   type           -- Must be followed by the keyword udp or tcp. This keyword
+#                     specifies the type of socket the monit program should 
+#                     use when testing the connection to the portnumber. If the
+#                     type keyword is omitted, tcp is used.
+#
+#   tcp            -- Specifies that monit should use a TCP socket type
+#                     (stream socket) when testing the port 
+#
+#   tcpssl         -- Specifies that monit should use a TCP socket type 
+#                     (stream socket) with ssl when testing the port.
+#
+#   certmd5        -- The md5 sum of a certificate a ssl forged 
+#                     server has to deliver.
+#
+#   udp            -- Specifies that monit should use a UDP socket type
+#                     (datagram socket) when testing the port 
+#
+#   protocol       -- Must be followed by a protocol keyword. This keyword
+#                     specifies the type of service found at the port.
+#                     monit knows how to speak many standard protocols, e.g. 
+#                     HTTP, SMTP, and FTP. See the monit man file for the 
+#                     complete protocol list. If no protocol is specified 
+#                     monit will use a default test which in most cases is 
+#                     good enough to test if a server is up or down.
+#
+#   request        -- Must be followed by a request string specifying a 
+#                     document or entity to fetch from the server. Currently 
+#                     only the HTTP protocol module supports the request 
+#                     statement, such as: "/data/show.php?a=b&c=d"
+#   send/expect    -- These keywords specify a generic protocol.  Both require
+#                     a string whether to be sent or to be matched against (as 
+#                     extended regex if supported). 
+#                       
+#   timeout        -- Part of the timeout statement or used in a connection
+#                     statement for connect timeout.
+#
+#   alert          -- Specifies an email address for notification if an
+#                     error occured on a service. This statement is optional. 
+#                     More than one alert statement is allowed.
+#
+#   checksum       -- Used in a file check entry to test the file for 
+#                     checksum changes. See the monit man file for more
+#                     information.
+#   
+#   expect         -- Specify a md5 string digest monit should expect when
+#                     testing a particular file's checksum. This statement is
+#                     an optional part of the checksum statement.
+#
+#   timestamp      -- Must be followed by compare operator, number, optional
+#		      a time unit and an action.
+#   
+#   size           -- Must be followed by compare operator, number, optional
+#                     a size unit and an action. 
+#   
+#   every          -- Only check the service at every n cycles.
+#
+#   mode           -- Must be followed either by the keyword active, passive
+#		      or manual. If active, monit will restart the service 
+#		      if it is not running (this is the default behaviour).
+#		      If passive, monit will only monitor and send alerts
+#		      (resource related restart and stop options are ignored
+#		      in this mode also). If manual, monit will enter active
+#		      mode only if service was brough under monit's control
+#		      otherwise the service isn't monitored.
+#
+#   cpu            -- Must be followed by a compare operator, a number with
+#                     percent {%|percent}, optionally a maximum number of 
+#                     cycles and an action.  This statement is used to check 
+#                     the cpu usage in percent of a process with it's children 
+#                     over a number of cycles. If the compare expression 
+#                     matches then the action is executed.
+#
+#   mem            -- The equivalent to cpu usage for memory of a process 
+#                     (w/o children!).  The syntax is equivilent to cpu,
+#                     but additionally amount units are accepted, expressed in 
+#                     {B|KB|MB|GB|%|byte|kilobyte|megabyte|gigabyte|
+#                     percent}
+#   
+#   children       -- Must be followed by a number without unit. It 
+#                     represents number of child processes. The syntax is
+#                     equivilent to cpu,
+#
+#   totalmem       -- The equivalent to mem for memory of a process 
+#                     (with children!). The syntax is the same
+#   
+#   loadavg        -- Must be followed by [1min,5min,15min] in (), a 
+#                     compare operator, a  number, optionally a 
+#                     maximum number of cycles and an action.  This statement
+#                     is used to check the system load average over a number
+#                     of cycles.  If the compare expression matches then the 
+#                     action (restart, alert, exec, stop or unmonitor) is
+#                     executed.
+#
+#   space	   -- Must be followed by a compare operator, number,
+#                     unit and action, where the unit is expressed in one of 
+#                     {B|KB|MB|GB|%|byte|kilobyte|megabyte|gigabyte|percent}
+#   
+#   inode(s)	   -- Must be followed by a compare operator, integer number,
+#                     optionaly by a percent sign (if not, the limit is 
+#                     absolute) and an action (required).
+#
+#   perm(ission)   -- Must be followed by an octal number describing 
+#                     the permissions monit should expect for a file, directory
+#                     or device.
+#
+#   depends	   -- Must be followed by the name of a service or a list of 
+#                     services *this* service depends on to run before it 
+#                     starts. The list of depend services will be stopped 
+#                     before the current service is started and started again
+#                     after.
+#   
+# Legal global option statements are
+#
+#   set daemon     -- Must be followed by a number (in seconds)
+#
+#   set init       -- If specified, do not background monit. This allows 
+#		      init to control and restart monit. To work properly,
+#		      modification of /etc/inittab is required.
+#                     (see the FAQ.txt for details)
+#
+#   set logfile    -- Must be followed by either a filename (full path is
+#                     required) or the string 'syslog'. If 'syslog' is used,
+#		      it can be optionally followed by 'facility <facility>'
+#		      where <facility> is one of 'log_local0' - 'log_local7'
+#		      or 'log_daemon'. If no facility is set it will default
+#		      to LOG_USER 
+#
+#   set pidfile    -- Must be followed by a filename (full path is
+#                     required) specifying the pid file for a monit daemon.
+#                     See the manual for default value if not specified.
+#
+#   set statefile --  Must be followed by a filename (full path is
+#                     required) specifying where monit should store
+#                     its state file. If not defined monit will use
+#                     the file, $HOME/.monit.state
+#
+#   set mailserver -- Must be followed by one or more mail server hostnames. 
+#                     If a  mailserver is not defined, monit will try to use 
+#                     'localhost' as the smtp-server for sending mail 
+#                     notification.
+# 
+#   set mail-format - Must be followed by a mail format list containing at 
+#                     least one of the keywords; from: subject: or message:
+#
+#   set alert      -- Specifies an global email address for notification if an
+#                     error occured on any service. This statement is optional. 
+#                     More than one alert statement is allowed.
+#
+#   set httpd port -- Must be followed by a portnumber for the monit http
+#                     server.
+#
+#   ssl enable     -- Enables ssl support for the httpd server.
+#                     It requires the use of the pemfile statement.
+#
+#   ssl disable    -- Disables ssl support for the httpd server.
+#                     It is equal to omitting any ssl statement.
+#
+#   signature enable -- Enables http server version signature
+#
+#   signature disable - Disables http server version signature
+#
+#   address        -- If specified, the http server will only accept connect
+#                     requests to this addresses This statement is an optional
+#                     part of the set httpd statement.
+#   
+#   pemfile        -- Specifies the file with the private key and the 
+#                     certificate for ssl support
+#
+#   allow          -- Specify a hostnames or IP addresses allowed to connect
+#                     to the http server (one allow statement per host)
+#         and/or
+#   allow          -- Specify a username:password in clear text for 
+#                     connecting to monit httpd
+#         and/or
+#   allow          -- Specify a "htpasswd" styled file in clear text,
+#                     MD5 or crypt for for users to connect to monit httpd
+#                     Attention: at least one clear text user credential
+#                     is necessary for the command line interface to 
+#                     connect to monit
+#
+#   include        -- include a file or files matching the globstring
+#
+#
+# The noise keywords `is', `as', `are', `for', `and', `the', `with',
+# `has', `using', `use', `on(ly)', `with(in)', `was', `than`, `usage'
+# and `program(s)' are ignored anywhere in an entry; they can be used
+# to make it resemble English.  The punctuation characters `,' `;' and
+# '=' are also ignored.
+#
+#
+# Here's an example for monitoring an apache web-server on port
+# HTTP and HTTPS, Sybase Database Server and various filesystems:
+#
+# [NB! Check and edit for your system and uncomment below]
+#
+# set daemon  120           # Poll at 2-minute intervals
+# set logfile syslog facility log_daemon # Set syslog logging 
+#                                        # (facility LOG_DAEMON)
+# set mailserver mail.bar.baz, localhost # Set localhost as a fall back server
+#                                        # if the primary mail server fails
+# set mail-format           # Set a default mail from-address for
+#  { from: monit@foo.bar }  # all alert messages emitted by monit
+# set alert sysadm@foo.bar  # Send alert to system admin on any event
+# set httpd port 2812 and   # Make monit start it's web-server
+#     use address localhost # and only accept connection from localhost
+#     allow localhost       # allow localhost to connect to the server and
+#     allow admin:monit     # user 'admin' with password 'monit'
+#
+#  check process apache with pidfile /usr/local/apache/logs/httpd.pid
+#    start program = "/etc/init.d/httpd start"
+#    stop program  = "/etc/init.d/httpd stop"
+#    if failed host www.tildeslash.com port 80 protocol http
+#       and request "/monit/next.html" then restart
+#    if failed port 443 type tcpssl proto http with timeout 15 seconds
+#       then restart
+#    if cpu is greater than 60% for 2 cycles then alert
+#    if cpu > 80% for 5 cycles then restart
+#    if totalmem > 200.0 MB for 5 cycles then restart
+#    if children > 250 then restart
+#    if loadavg(5min) greater than 10 for 8 cycles then stop
+#    if 3 restarts within 5 cycles then timeout
+#    group server
+#    
+#    
+#  check file apache_bin with path /usr/local/apache/bin/httpd
+#    if failed checksum and 
+#       expect the sum 8f7f419955cefa0b33a2ba316cba3659 then unmonitor
+#    if failed permission 755 then unmonitor
+#    if failed uid root then unmonitor
+#    if failed gid root then unmonitor
+#    alert security@foo.bar on {
+#           checksum, permission, uid, gid, unmonitor
+#        } with the mail-format { subject: Alarm! }
+#    group server
+#
+#    
+#  check process sybase with pidfile /var/run/sybase.pid
+#    start program = "/etc/init.d/sybase start"
+#    stop program  = "/etc/init.d/sybase stop"
+#    if failed port 4001 then restart
+#    if 2 restarts within 3 cycles then timeout
+#    group server
+#    mode passive
+#    depends on datafs
+#
+#
+#  check device datafs with path /dev/sdb1
+#    start program  = "/bin/mount /data"
+#    stop program  = "/bin/umount /data"
+#    if failed permission 660 then unmonitor
+#    if failed uid root then unmonitor
+#    if failed gid disk then unmonitor
+#    if space usage > 80% then alert
+#    if space usage > 99% then stop
+#    if inode usage > 80% then alert
+#    if inode usage > 99% then stop
+#    group server
+#
+#
+#  check device rootfs with path /dev/sda1
+#    if failed permission 660 then unmonitor
+#    if failed uid root then unmonitor
+#    if failed gid disk then unmonitor
+#    if space usage > 3 GB then alert
+#    if inode usage > 30000 then alert
+#    mode passive
+#
+#
+#  check file database with path /data/mydatabase.db
+#    if failed permission 700 then alert
+#    if failed uid data then alert
+#    if failed gid data then alert
+#    if size > 100 MB then alert
+#    if timestamp > 15 minutes then alert
+#
+#
+#  check directory bin with path /bin
+#    if failed permission 755 then unmonitor
+#    if failed uid 0 then unmonitor
+#    if failed gid 0 then unmonitor
+#
+#
+#  check host myserver with address 192.168.1.1
+#    if failed icmp type echo with timeout 3 seconds then alert
+#    if failed port 3306 then alert
+#    if failed port 80 protocol http then alert
+#    if failed port 443 type tcpssl protocol http
+#       with timeout 15 seconds then alert
+#    if failed host virtual.web.org port 80 protocol http
+#       and request "/help/info.html" then alert
+#
+#  include /etc/monit/mysql.monitrc
+#  include /etc/monit/mail/*.monitrc
+#
+#  check file foobar with path /somewhere
+#     include /etc/monit/defaultfile.monitrc
+#
+

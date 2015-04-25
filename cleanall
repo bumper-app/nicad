@@ -1,0 +1,13 @@
+#!/bin/bash
+# Clean out all previous NiCad results
+# J.R. Cordy, Queen's University, March 2013
+
+if [ "${1}" == "" ]
+then
+    systems=.
+else
+    systems="${1}"
+fi
+    
+./scripts/CleanAll "${systems}"
+

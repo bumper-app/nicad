@@ -1,0 +1,42 @@
+Please report any bugs or problems with NiCad3 in the TXL Forum,
+
+    http://www.txl.ca/forum/viewforum.php?f=21
+
+Known Issues:
+-------------
+
+1. Syntax Errors
+   -------------
+   In order to do its work, NiCad parses all source files.  
+   Most systems will have some files with real syntax errors in them,
+   so do not be alarmed by a small number of "failed to parse"
+   files, that is normal and expected.  
+
+   However, if you get a large number of parse errors (more than 1%), 
+   please report details of the problem in the NiCad section of 
+   the TXL Forum so that the grammars can be improved.
+
+2. Directory Names with Spaces
+   ---------------------------
+   Some non-Linux systems have directories with spaces in them. 
+   These present a problem for the NiCad scripts, which use
+   find(1) to navigate large directories of source.
+
+   To process systems like this, first run the "fixspaces" command
+   in the nicad home directory on the system source.  For example:
+
+      fixspaces systems/c/thesystem
+
+3. Output is not pure XML
+   ----------------------
+  The output of NiCad is in its own simple markup format based
+  on XML, but is not pure XML. In particular, it is missing the
+  XML schema header line. However, it is close enough that it
+  should be acceptable to any XML editor.
+
+  When source is included in the results (the "withsource" 
+  output produced by the "report=yes" configuration option),
+  source fragments may cause problems for XML editors.
+  However, the HTML format of the results is pure XHTML
+  and should be acceptable to any web browser.
+

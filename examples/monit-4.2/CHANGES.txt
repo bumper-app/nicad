@@ -1,0 +1,874 @@
+			 CHANGES version 4.2
+
+	     This file summarizes changes made since 1.0
+
+Version 4.2
+
+NEW FEATURES AND FUNCTIONS:
+*  Support for file inclusion in the control file (monitrc).
+   Syntax:
+     include globstring
+   This function allows for the monit control file to be split up into
+   several fragments and (for example) collected into a monitrc.d
+   directory. A proof of the concept can be found here:
+   http://people.altlinux.ru/~homyakov/packages/monit/
+
+*  monit now prints it's status in text and in xml format via this
+   URL: http://localhost:2812/_status?format=xml and
+   http://localhost:2812/_status?format=text
+
+*  In addition to MD5 checksums monit supports now SHA1 checksums for
+   files and HTTP requests.
+
+*  Services not monitored does not have their status displayed in the
+   web interface, but instead a "not monitored" text is shown.
+
+*  Support for httpd server version signature hiding. Syntax:
+     signature [enable|disable]
+   By default the monit httpd server will show its version in the
+   header. 
+
+BACKWARD INCOMPATIBLE CHANGES:
+*  The old status URL: http://localhost:2812/<service>?action=status
+   is defunct and replaced with the new URL described above.
+
+*  The 'monit status' command reports general status overview only and
+   status is only available if the monit daemon runs.
+
+*  Service names in the .monitrc control file is not allowed to start
+   with a slash '/', because such service names cannot be viewed
+   properly in the monit web interface.
+
+BUGFIXES:
+*  Ring move protection added to process tree code. There was a rare loop
+   problem detected which can cause monit's crash. Thanks to Allen Shaw
+   <publicnet2!hotmail com> for reporting the problem.
+
+*  Parser fixes to prevent possible crash during configuration phase.
+
+*  Fix invalid monitrc's line number reported when the control file
+   parser detected semantical problems (i.e. not syntax problems).
+   Thanks to Peter Holdaway <pholdaway!technocom-wireless com> for
+   reporting the problem.
+
+*  Also fixed a problem with locked mutex across a fork on Solaris
+   (and probably other OS other than Linux v. 2.4 with a "real" thread
+   implementation). The problem manifest itself (infrequently) by
+   monit not beeing able to start a requested program and the forked
+   monit process hanging on a mutex. Thanks to Peter Holdaway
+   <pholdaway!technocom-wireless com> for discovering the problem and
+   for providing a patch that fix the problem.
+
+*  The logger is now made thread-safe with a mutex. There existed a
+   possibility for two or more threads to write to the log file at the
+   same time.
+
+*  Re-added close-on-exec for sockets created by monit, so they will
+   not be kept open in processes started by monit. This functionality
+   was left out by a mistake in 4.x.
+
+*  Fix exit signal handler race condition.
+
+
+Version 4.1.1
+
+NEW FEATURES AND FUNCTIONS:
+*  Support for global alert statement added. It allows to use definition
+   of recipients which are common for all services only once. It is possible
+   to use optional custom mailformat and event registration as usual
+   in normal (per service) alert statement - the only difference is 'set'
+   word on the beginning of this standalone statement. The simplest example:
+     set alert sysadmin@bar
+
+*  monit now print error and log messages to the standard file
+   descriptors (1,2) even if they do not referee to a tty. This change
+   allows output to be redirected to a non-tty at monit startup. For
+   instance: monit 1>/dev/null 2>/path/monit.err
+
+BUGFIXES:
+*  Allow ftp servers to display banners without reporting an error in
+   the ftp-protocol test. Thanks to Asaf Shakarchi <asaf!asaf gotdns com> 
+   for reporting the problem.
+
+*  The SSH protocol will now send back proper linefeed terminating
+   strings to the ssh-server. Thanks to David Fletcher <david!megapico
+   co uk> for reporting the problem.
+
+*  This release patch the following security vulnerabilities, reported
+   by Evgeny Legerov <e.legerov!s-quadra com>:
+      Vulnerability 1: Long http method stack overflow
+      Vulnerability 2: Denial of Service via negative Content-Length field
+   These vulnerabilities exist in previous monit releases down to the
+   1.4 release. This issue only affect previous monit releases if
+   monit is started with http server support.
+
+
+Version 4.1
+
+NEW FEATURES AND FUNCTIONS:
+*  Support for ICMP echo test added to remote host check
+
+*  Support for generic protocol tests using send/expect added. It is
+   possible to use Posix regex in an expect string if Posix regex is
+   supported by the operating system.
+
+*  The number of user credentials is no longer limited to one.
+
+*  Support for htpasswd styled files for user credentials is added.
+   Crypt, MD5 and cleartext passwords are supported.
+
+*  From this release on, it is possible to define more than one SMTP
+   server monit should use for sending alert messages. If monit cannot
+   connect to the first SMTP server it will try the second in the list
+   and so on.
+
+*  Added SMTP server connect and read timeout. Monit has a default 5
+   seconds timeout and if the SMTP server is slow, monit could timeout
+   when connecting or reading from the server. It's is now possible to
+   explicit set the timeout to a higher value.
+
+*  Monit can now also test the checksum for files on a remote host via
+   the HTTP protocol.
+
+*  Web and console interface output refactored and simplified.
+   Instead of printing out one line for each registered alert event-
+   type, one condensed line is used.
+
+*  Support for read-only user access added to web interface
+
+*  PHP "proxy" script for accessing the monit web pages via port 80
+   using a regular http server, such as apache httpd. Contributed by
+   David Fletcher <david!megapico co uk>. See the contrib/ directory.
+
+BUGFIXES:
+*  Alert limitation implemented; Monit will only raise one alert when
+   an error situation occurs and *not* repeatedly send error messages
+   for the same problem.  When the error has gone, monit resets and
+   will raise a new alert if the error should reoccur. Consider:
+     if cpu > 50% then alert
+   Monit will now only raise one alert if the cpu usage goes beyond
+   50% and, as long as the process uses more than 50% cpu no more
+   error alerts are sent. When usage drops below 50% monit will reset
+   and again send a new alert if usage should raise above 50% again.
+   Previous versions of monit did not have this feature and
+   continuously sent alerts as long as the test validated to true.
+   This change does not only applies to cpu test but also to memory
+   tests, size and space tests and timestamp tests. The bottom line is
+   that you will no longer get many duplicate alerts for the same
+   problem.
+
+*  Don't print html tags to the console on shutdown when monit runs in
+   init mode (-I).
+
+*  Monit now supports logging via multilog when running via
+   daemontools. Thanks to Klaus Alexander Seistrup
+   <bugs!magnetic-ink.dk> for reporting the problem.
+
+*  Added the resource event type. This type was missing and would lead
+   to a parse error if this alert statement was used, 'alert on {
+   resource }'
+
+*  Fixed the bug that caused monit not to unmonitor all depending
+   services when a unmonitor action was executed. Thanks to Marco
+   Bisioli <bisioli!adriacom.it> for providing the bugfix.
+
+*  Added a missing exec action for space and inode tests
+
+*  Fixed a bug that allowed duplicate entries under certain
+   circumstances in the control file.
+
+*  In the case that SSL client certificate is not defined, monit will
+   not print error message
+
+
+Version 4.0
+
+NEW FEATURES AND FUNCTIONS:
+*  A new check service entry was added to allow monitoring of devices.
+   In addition to common options Monit is able to watch permission,
+   owner's uid and gid, space and inodes and execute customized actions
+   in case of a problem. See the manual for the new syntax. Example:
+     check device rootfs with path /dev/sda1
+           if space usage > 90% then alert
+	   alert foo@bar
+
+*  A new check service entry was added to allow monitoring of files. In
+   addition to common options, Monit is able to watch checksum, permission,
+   owner's uid and gid and file size. See the manual for the new syntax.
+   Example:
+     check file database with path /data/mydatabase.db
+           if size > 100 MB then alert
+	   alert foo@bar
+
+*  A new check service entry was added to allow monitoring of directories.
+   In addition to common options, Monit is able to watch permission and
+   owner's uid and gid. See the manual for the new syntax. Example:
+     check directory bin with path /bin
+           if failed permission 755 then alert
+	   alert foo@bar
+
+*  A new check service entry was added to allow monitoring of remote
+   host services. See the manual for the new syntax. Example:
+     check host redhat with address ftp.redhat.com
+           if failed port 21 protocol ftp then alert
+	   alert foo@bar
+
+*  Resource monitoring now checks the number of child processes and
+   the total memory of a process and it's children.
+
+*  The start and stop statement is extended with an optional part to
+   be able to run the program as a specified user and with a specified
+   group id. This extension can only be used if the super-user is
+   running monit.
+
+*  The timestamp statement is extended to check for file and directory
+   changes. You can now use the timestamp statement to get an alert if
+   a file was changed. Note: The timestamp does only test the last
+   modified stamp not if the content of the file was changed. Use the
+   checksum statement for this. Example:
+     check file passwd with path /etc/passwd
+           if timestamp was changed then alert
+
+*  A new 'exec' action was added for all service test types (such as
+   the timestamp, resource, checksum, space, etc.) The exec statement
+   is used to execute an arbitrary program as an action if the test
+   validates to true. It is possible to run this program optionaly as
+   a specified user and with a specified group id. See manual for the
+   new syntax. For instance to reload apache if the httpd.conf file
+   was changed:
+     check file httpd.conf with path /usr/local/apache/conf/httpd.conf 
+           if timestamp was changed 
+              then exec "/etc/init.d/apachectl graceful"
+
+*  A new 'unmonitor' action and command was added to explicit allow
+   monitoring disabling. This can be used to disable monitoring of
+   services (aka bring it to maintenance mode), etc. Dependency
+   relationships are also supported.
+
+*  A new 'monitor' command was added to explicit enable service
+   monitoring. This can be used to re-enable monitoring if a service
+   timed out or was stopped or start monitoring a service in manual
+   mode. Dependency relationships are also supported - all services
+   which this service depends on are also set in monitored mode before
+   starting monitoring of this service. You can also enable or disable
+   service monitoring from the console or from the web interface.
+
+*  It is possible to set message facility in the case that monit logs
+   via syslog.
+
+*  This release supports a native RDATE test. Thanks to Francois
+   Isabelle <Francois.Isabelle!ca.kontron.com>
+
+*  This release supports a native RSYNC test. Thanks to Igor
+   Homyakov <homyakov!altlinux.ru>
+
+*  Programs executed by monit, now has several monit specific
+   environment variables available, which they may utilize for various
+   purposes. A list of the available variables can be found in the
+   documentation.
+
+*  Monit can be compiled with dietlibc and uClibc from now on. Using
+   dietlibc it possible to use SSL; SSL support with uClibc is
+   untested.  For build instructions refer to to the documentation of
+   these libraries.
+
+*  Gracefull unbind requests added to LDAPv2 and LDAPv3 tests
+
+*  Monit now reports the complete start/stop command (previous version
+   reported only the first argument).
+
+*  Resource monitoring can be turned off in the configure stage of
+   compilation.
+
+*  Fixed monit rc script and monit.spec
+
+*  This release introduces AIX and OpenBSD support and generic 
+   support for unknown operating systems. Thanks to Richard
+   Schwaninger <risc!vmilch.at> and Margarida Sequeira
+   <margarida!openbsd.org>
+
+*  HP/UX support brought to the same state like all other operating 
+   systems.
+
+*  The monit httpd server now logs denied client connections. If a
+   client is not allowed to connect to the server the connect attempt
+   will be logged including the client's ip-address. A failed attempt
+   to log in via basic authentication is also logged with the clients
+   ip-address.
+
+*  The monit httpd server is rewritten to use non-blocking i/o.
+
+BACKWARD INCOMPATIBLE CHANGES:
+*  The service names are no longer restricted by reserved names.
+   Due to this, the syntax of DEPENDS was changed.
+
+*  The syntax of resource monitoring has changed. "CPUUSAGE",
+   "MEMUSAGE", "MEMKBYTE" is dropped in favor of the unit based
+   "MEM" and "CPU" commands.  Please consult the man page for 
+   details.
+
+*  The syntax for the checksum statement has changed so the statement
+   is a real IF-THEN statement. An example of a valid checksum
+   statement: "if failed checksum then stop". The old syntax version
+   is obsolete.
+
+*  The syntax for the timeout statement has changed so the statement
+   is a real IF-THEN statement. An example of a valid timeout
+   statement is:
+     if 2 restarts within 3 cycles then timeout
+   The old syntax version, e.g. timeout(2, 3) still works but is
+   deprecated and future releases may remove this version.
+
+*  This release changes the port statement to explicit require an
+   action to be executed upon a failed connection test. The port
+   statement has also been extended to include an optional socket
+   connection timeout.
+
+*  The checksum statement is now restricted to a check file service
+   entry. Usage of this statement in a check process service is
+   obsolete from this release. See the documentation and the
+   UPGRADE.txt file accompanying the software.
+
+*  The timestamp statement is now restricted to a check file service
+   entry. Usage of this statement in a check process service is
+   obsolete from this release. See the documentation and the
+   UPGRADE.txt file accompanying the software.
+
+*  You do not need to specify the path to the file or directory in a
+   checksum or in a timestamp statements. The path is inherited from
+   the parent check service.  See the documentation and UPGRADE.txt
+   file.
+
+*  The command line arguments start, stop and restart needs a
+   following 'all' from this release on to start/stop/restart *all*
+   programs in the control file. For instance 'monit stop all'. This
+   is done to avoid that an accidentally user input error should stop
+   every monitored service at once.
+   
+*  The $PROGRAM tag in the mail-format statement was renamed to
+   $SERVICE. The meaning is the same - it is replaced by the name of
+   the monitored service, but compared to previous versions these
+   services can now be either program, device, directory or file. The
+   $PROGRAM tag is still supported for backward compatibility, but use
+   of $SERVICE is highly recommended because it is more relevant.
+
+*  The option -i was removed because it was useless. Note: option
+   -I which is used for monit starting under init's control is not
+   affected by this change.
+
+BUGFIXES:
+*  Monit now closes all file descriptors before spawning a child
+   processes. There was a problem with open file descriptors inherited
+   by processes started under monit's control. Thanks to Peter
+   Holdaway <pholdaway!technocom-wireless.com> for reporting the
+   problem.
+
+*  This release fixes a problem with alert messages and qmail. Qmail
+   complained about bare line feeds in some alert messages. Monit does
+   not send alert message with bare line feeds anymore. Thanks to Rail
+   Aliev <rail!iqchoice.com>
+
+*  Fixed the bug that did not report actions on a service unless a
+   start statement was defined for the service. Now it is possible get
+   notification via email if a service died, even if you did not
+   include any start statement. For instance, this is now a complete
+   statement and will, report if the service apache should die: 
+    check process apache with pidfile /usr/local/apache/logs/httpd.pid
+    alert foo@bar.baz
+
+*  Fixed a bug in the lexer that required the start and stop statement
+   to use SPACE '=' "/<path> argument" when arguments was used. The
+   start and stop statement can now be written as: 
+     start "/<path>/program start" if you want to.
+
+*  Checksum statement bug fix. Previous versions compared only
+   first 31 characters of 32 possible.
+
+*  This release utilize a state file to save significant process data.
+   This allows data to be persistent and survive a monit reload and
+   let monit recover from a crash and pick up without losing the
+   process state.
+
+*  The network code was rewritten to use a more modern non-blocing
+   approach. As a result, socket read/write and socket connection
+   works more proper and allows configured timeout.
+
+*  Race conditions created by signaling the executable at the wrong
+   time and at the wrong place could lead to SIGSEGV. This has been
+   fixed and cleaned up by introducing (more) thread blocks in the
+   code, thus making the code more reentrant.
+
+*  Fixed the problem, where monit identified a running process as non-
+   running. Thanks to Shannon E. Reall <ser!ams.org> for reporting the
+   problem.
+
+*  Monit does not use /proc/kcore on Linux anymore. This makes it
+   possible to use monit on a 2.4 kernel with the grsecurity patch and
+   on a 2.6 kernel with architectures such as ARM. Thanks to Arkadiusz
+   Miskiewicz <arekm!pld-linux.org> for reporting the problem and
+   providing the patch.
+
+*  Fixed race condition related to monit httpd server stop. Monit now
+   waits for its httpd to terminate gracefully before freeing memory
+   and closing filedescriptors.
+
+*  Fixed race condition related to SIGINT and SIGTERM signals which
+   if catched during monit exit phase can cause recurrent exit handler
+   call.
+
+*  Don't try to stop monit httpd and close daemon related files if monit
+   was not started in daemon mode and received SIGTERM or SIGINT.
+
+
+Version 3.2
+
+*  This release include documentation on how to setup a simple
+   failsafe cluster with monit and Heartbeat, see also:
+   http://www.tildeslash.com/monit/monit.html#monit%20with%20heartbeat
+   Thanks to Oliver Jehle <oliver.jehle!monex.li>.
+
+*  Monit now reloads configuration ONLY after it receives SIGHUP.
+   Automatic reload based on monit's control file timestamp is now
+   defunct.
+
+*  New monit command 'reload' is added. If used, it will reinitialize
+   a running monit daemon (send it the SIGHUP signal).
+
+*  A new monit option '-t' is added. If used, monit will run a syntax
+   check for the control file and exit with the status.
+
+*  The ssl version for TCPSSL tests can now explicitly be set if auto-
+   detection should fail. (Thanks to Mark Foster <mdf!foster.cc> for
+   the bugreport)
+
+*  This release supports a native LDAPv2 and LDAPv3 tests. Both tests
+   are based on anonymous bind.
+
+*  This release supports a native DWP (database wire protocol) test.
+
+*  Restart method added to monit httpd cervlet
+
+*  HP/UX support was added. Thanks to Joe Bryant <JBryant!RiteAid.com>.
+
+*  Monit now reports service monitoring status [monitored|not monitored].
+   Thanks to Oliver Jehle <oliver.jehle!monex.li>.
+
+*  Daylight savings time calculation problem fixed
+
+*  Alert messages in passive mode fixed
+
+*  Console command "monit restart [service]" in daemon mode fixed
+
+*  Start/stop/restart race condition fixed.
+
+
+Version 3.1
+
+*  This release optionally makes use of openssl. It is possible to
+   monitor processes which are forged with ssl. Monit's http server
+   can run with ssl, too. Read more about this feature in the man
+   documentation and in the file, README.SSL. The SSL feature is a
+   beta feature in this release.
+
+*  This release supports process dependency. This is a beta feature.
+
+*  This release replaces the 'autostart' statement with the 'mode'
+   keyword. 'autostart' is now deprecated.
+
+*  Three monitoring modes are now supported. In addition to the
+   standard active mode (equals obsolete autostart=yes) and passive
+   mode (equals obsolete autostart=no) there is a new manual mode,
+   which allows monit to work as a simple process monitor in a
+   clustered environment. Thanks to Oliver Jehle
+   <oliver.jehle!monex.li> for the proposal and helping with the
+   patch.
+
+*  The location of the pidfile can be modified via a command switch or
+   in the control file using the new 'set pidfile' statement.
+
+*  This release supports a native ssh protocol test. Thanks to
+   Igor Homyakov <homyakov!altlinux.ru>.
+
+*  This release supports timestamp monitoring for files and for
+   directories.
+
+*  If start and/or stop programs are not defined, monit will act as in
+   passive mode, that is, monit will send alert message in case of
+   service failure. Previous release did nothing in such cases.
+
+*  This release reloads monit httpd if the interface where monit httpd
+   listens for connection was changed in monitrc (don't require
+   monit's restart)
+
+*  If a SIGHUP signal is sent to a monit daemon it will reload
+   itself. This is useful if you use a monit log file and need to
+   rotate the log, for instance with the logrotate program.
+
+
+Version 3.0
+
+*  A new feature to check and utilize systems and process information
+   is introduced with this release. With this feature you can get an
+   alert or monit will stop or restart programs based on their process
+   characteristic. E.g. if a process is using to much memory you can
+   get an alert, or if a process is using to much CPU monit can auto-
+   matically restart the program. Please have a look in the document-
+   ation to learn more about this new feature.
+
+*  This release also augment the web interface and console status
+   command to display for each process the uptime, cpu usage and
+   memory usage.
+
+*  To protect the security of your control file and passwords the
+   control file must have permissions no more than 0700 (u=xrw,g=,o=);
+   monit will complain and exit otherwise.
+
+*  This release support up to 64 arguments for the start and stop
+   programs. Previous versions supported only 2 arguments.
+
+*  If monit fails to execute a start or stop program, monit will now
+   send an alert message. Previously, monit only logged a message if
+   it failed to execute a program.
+
+*  This release makes use of autoheader and config.h. Thanks to Mark
+   Ferlatte <ferlatte!cryptio.net>.
+
+
+Version 2.5.1:
+
+*  This release adds a new check for unix socket based servers in
+   addition to networked port.  The syntax is based on the monit port
+   command, e.g.: unix /var/run/foosocket
+
+*  The file creation mask monit was started with is now passed along
+   to programs started by monit. In other words, the umask monit was
+   started with is inherited by programs started by monit.
+
+*  The monit daemon is now properly detached from the console
+   tty. Thanks to Mark Ferlatte <ferlatte!cryptio.net>.
+
+*  Changed the the default udp socket test to actually check if an udp
+   server is running or not. In previous versions the default udp test
+   would always return success even if there was no server behind the
+   stated portnumber. The new udp test is not perfect, a 1 byte udp
+   packet is sent to the server to test if the server is running; this
+   may cause an error report by the server. Still, we belive this test
+   is better than no test. In a future release this test will be
+   improved.
+
+*  This release makes it possible to write %xy url-encoded characters
+   in the http protocol request.
+
+*  This release fixes a problem with a changed monitrc file and a
+   monit daemon running in the background. The monit httpd will now
+   start again if it was previously stopped or it will restart with a
+   new portnumber if the portnumber was changed in the monitrc file.
+
+
+Version 2.5:
+
+*  This release adds IP address based ACL for monit httpd. It is now
+   possible to use IP addresses in addition to hostnames in the
+   'allow' statement.
+
+*  The http protocol test is now based on HTTP/1.1 and actually
+   supports HTTP/1.1 virtual hosts.
+
+*  The http protocol test is also extended to include an optional
+   request statement for http. With this statement it is possible to
+   ask monit to check a particular url, like so:
+     host www.cnn.com port 80 proto http request "/markets/ipo"
+
+*  The status command is changed to print an uptime string for each
+   process in addition to the usual output. The web interface will also
+   show the uptime for each process monitored.
+
+*  Suse rpm spec files added in contrib/packages/suse by Thomas Oppel
+
+*  And finally, the monit's web interface has got a new designed
+
+
+Version 2.4.3:
+
+*  This release adds a new configuration file statement that makes it
+   possible to specify an address the monit httpd should bind to.
+
+*  This release fixes a problem with monit httpd descriptor
+   inheritance. On Solaris it has been observed that programs started
+   by monit could inherit the monit httpd server socket with the
+   result that these programs also seemed to listen on the httpd port
+   number.  Thanks to Christian Hopp <chopp!iei.tu-clausthal.de> for
+   reporting and help solving this bug.
+
+*  The date header in email alerts is changed to a RFC 1123 Date
+   string. This will make Mail User Agents happier. Again thanks to
+   Christian Hopp <chopp!iei.tu-clausthal.de> for reporting this
+   problem.
+
+
+Version 2.4.2:
+
+*  This release adds an explicit date header to emails emitted by
+   monit. It seems that qmail have problems setting the date header
+   and if the header is not present in the mail, qmail will set a
+   wrong date (i.e. the EPOCH). Patch submitted by Georgi
+   Chorbadzhiyski <gf!unixsol.org>.
+
+*  This release also fixes a possible SIGSEGV that could occur when
+   the monit http://../_about HTML page was displayed. Thanks to
+   Martin Pala for helping with the patch.
+
+*  More consistent log and console reporting when starting and
+   stopping the monit deamon and minor simplification in the http
+   server code. Again thanks to Martin Pala for submitting patches.
+
+*  This release also revert to using the old alarm code for http
+   connection timeout in the monit http server, instead of using the
+   new SO_RCVTIMEO socket option since few Unix versions support this
+   (correctly).
+
+
+Version 2.4.1:
+
+* Fixed a bug that could cause monit *not* to start programs. The 2.4
+  version had a bug that could cause a SIGSEGV in spawn.c with the
+  result that the child process that should start a program died. This
+  bug occured if the set logfile syslog statement was used in monitrc.
+  Thanks to Volker-J Westphal <volker-j.westphal!db.com> for reporting
+  and help solving this bug.
+
+* $ is allowed in the from address in mail-format, to make this type
+  of statement legal; mail-format { from: monit@$HOST }. 
+
+* Internal simplification of the mail format code, Thanks to Martin
+  Pala <martinp!tildeslash.com>.
+
+* The SIGUSR1 signal is blocked in the alert function so e.g. a monit
+  wakeup call cannot interrupt a mail alert transfeer.
+
+
+Version 2.4:
+
+* Extended refactoring of the alert function. It is now possible to
+  customize the email message monit will send. Thanks to Martin Pala
+  <martinp!tildeslash.com>, for helping with this refactoring and for
+  providing code that makes it possible to send multiple alert messages.
+
+* If a monit daemon is running in the background it is requested to
+  stop programs. This way, a monit daemon will not start a program
+  again after it was stopped with the command; 'monit stop'
+
+* The statements 'checksum start' and 'checksum stop' are
+  depricated. Instead use the 'checksum file' statement.
+
+* Fixed a significant but extremely rare alarm signal thread conflict.
+  An alarm signal emitted by one thread and catched by another could
+  cause monit to die (observed on FreeBSD). This could happen if monit
+  was sending an alert mail while the http thread processed a request
+  at the same time.
+
+* Minor bug fixes in the parser and the source code is changed to use
+  stronger typing.
+
+
+Version 2.3:
+
+* This release adds a group statement feature to monit, thanks to
+  K. Sayah Karadji. It's now possible to group together several
+  program entries in the control file and manage a group of programs
+  from the command line. This release also introduce the autostart
+  statement, also provided by K. Sayah Karadji. This statement is used
+  to control if monit should automatically start a program if it is
+  not running.
+
+* Restarts is again a noise keyword, (but note, restart without the
+  ending 's' is a regular keyword). This makes it possible to write
+  the timeout statement verbosely again as stated in the documentation:
+       timeout if 3 restarts within 3 cycles
+
+Version 2.2.1:
+
+* This release fix a problem with Basic Authentication overriding the
+  Host Allow List authentication. Now both authentication methods can
+  be used together as stated in the documentation.
+
+* This release also fix build problems on Solaris and on FreeBSD (with
+  only GNU Portable Threads).
+
+
+Version 2.2:
+
+* The monit http server socket is made reusable. This is useful if
+  monit has been shut down, and then restarted right away.
+
+* The md5 checksum function has been refactored. Checksum are now
+  optional per program entry.
+
+
+Version 2.1.1:
+
+* The socket interface has been made more robust in this release by
+  masking out the SIGPIPE signal.
+
+* Removed a mini memory leakage when starting/stopping programs from
+  the web-interface.
+
+
+Version 2.1:
+
+* Basic Authentication schema added. This feature is usefull if you
+  want to connect to a monit httpd from a host without a permanent
+  IP-address and want an alternative to the host allow list
+  authentication.
+
+* If an 'allow host' entry is removed from the control file, the host
+  will also be removed from monits internal allow list on the next
+  poll cycle. This was not done in previous releases.
+
+* Some refactoring and extensive HTML documentation for the monit
+  source code.
+
+
+Version 2.0:
+
+* Support for start, stop and restart of specified programs from the
+  command line.
+
+* The http interface now support start and stop of all programs
+  managed by monit. This is e.g. useful for managing daemons on
+  several machines from a browser.
+
+* monit now use POSIX threads and does not fork of a standalone http
+  process, instead the monit http server is started in its own thread.
+
+
+Version 1.4.1:
+
+* Programs are now actually started with standard filedescriptors
+  opened. There was a bug in the spawn.c code that did the opposite.
+  Thanks to Martin Pala <martinp!tildeslash.com> for providing this
+  bugfix.
+
+  If you had a problem with starting certain deamons from monit this
+  release will (probably) fix that.
+
+
+Version 1.4:
+
+* Fixed build problems on Solaris 2.[5/6]
+
+
+Version 1.4beta:
+
+* monit now has a web-interface. You can check if monit is running and
+  the status of all programs monitored by monit from a browser.
+
+* A checksum is taken for all programs that monit uses for managing
+  daemons, and an alert notification is sent if a program changes. 
+  Thanks to Rick Robino <rrobino!peek.com> for suggesting this feature.
+
+* The spawn code has been simplified and tighten.
+
+* NOTE: THIS VERSION HAS ONLY BEEN BUILT AND TESTED ON LINUX RH 7.1. 
+
+
+Version 1.3.1:
+
+* Alert notification is put after server restart. Relevant if monit
+  watches the local smtp server and use this for alert as well.
+  Thanks to "Martynas" <martynas!inet.lt> for the reminder.
+  
+* The timeout alarm is started before monit tries to open a socket, so
+  monit doesn't hang on a connection.
+
+* Fixed the possible '-c' exploit. (And hopefully others). 
+
+
+Version 1.3:
+
+* Most of the source files in this release are to some extent
+  changed. For the most part, it's just polishing, but the grammar is
+  refactored a bit and the connection testing code are extended
+  much. Because of this I feel more comfortable to coin this release a
+  BETA release. The quality of the code should be good, but this
+  release has not been long into production. Feedback and any bugfixes
+  are welcome.
+
+* NB! The syntax for the host-statement is changed slightly. The new
+  syntax is (see the man file for explanation): 
+   [HOST hostname] PORT number [TYPE {TCP|UDP}] [PROTO(COL) {name}]
+
+* Code added for safer exec and environment handling
+
+* Polished the controlfile grammar, so that optional statements
+  doesn't have to be written in any particular order.
+
+* Extended the alert function to include restart alerts. Alert is now
+  a standalone statement, not depending on timeout.
+
+* Code added for better memory allocation.
+
+* When testing (default) connection to a port, new code is added to
+  test if it's possible to write or read to/from the socket. This is 
+  a good vitality test for any server.
+
+* The following was provided by Michael Amster <mamster!webeasy.com>
+  and included into this release:
+
+  - sendmail.c now correctly supports RFC822 and does not send bare
+    linefeeds.
+
+  - Fixed stack smashing security issues. General replacement of
+    strcpy with strncpy, sprintf with snprintf, strcat with strncat.
+
+* Michael also provided code that inspired me to create a new
+  interface for semantic test for some of the more popular Internet
+  protocols, like HTTP, POP, SMTP and FTP. The "interface" design is
+  loosely based on the Delegation Pattern. It's easy to develop new or
+  change existing protocol modules without changing any main program
+  logic.  With this feature, monit will be able to, not only connect
+  to a certain port, but also speak the protocol to verify that the
+  server works. If you want to create your own protocol modules, see
+  the NOTES file in the protocols directory.
+
+
+Version 1.2:
+
+* monit now saves its pidfile in /var/run or /etc when run by root
+
+* Fixed Mailserver-statement so real hostnames can be used as well as
+  localhost.
+
+* Fixed permission problem when checking for running process. This
+  problem occured when monit was started by a regular user and monit
+  tested a program run by root (e.g. a program doing setuid=root). 
+  In this case monit wrongfully reported that the program was not 
+  running, even if it did.
+
+* The following was provided by Olivier Beyssac and included into
+  this release:
+
+  - In case your server provides IP-based or name-based virtual hosts
+    you can now use monit for connection testing to explicit stated  
+    hostnames:
+        New format for this is : host <hostname> port <number>
+    This is backward-compatible with the "port <number>" only
+    statement, where the hostname is implicit localhost.
+
+  - Added an every statement, to check a process every n cycle
+
+
+Version 1.1:
+
+* Support for UDP as well as TCP in port checking
+
+* Program timeout mechanism and alert notification
+
+* Fixed minor precedence problem between global 'set-variables' set at
+  the command-line and the control file
+  
+
+Version 1.0:
+
+* Initial release
+

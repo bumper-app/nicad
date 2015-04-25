@@ -1,0 +1,20 @@
+Changes from NiCad 3.4 in 3.5
+
+1. Added custom transformation stage to NiCad process.
+	Supports optional transformation of potential clones
+	before renaming.
+
+2. Removed @Override annotations from clone comparison in Java.
+	Increases precision in Java clone detection.
+
+3. Fixed bug in NiCad scripts that disallowed multiple abstract
+	and filter nonterminals.
+
+4. Added ability to report clones in normalized comparison form
+	using "report=normalized".
+
+5. Added ability to split clone classes into directories of 
+	source files using "splitclasses class-report-file.xml"
+
+6. Added "cleanall" script to clean out old NiCad results.
+

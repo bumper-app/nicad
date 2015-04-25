@@ -1,0 +1,33 @@
+NiCad3 has undergone a number of changes to increase
+convenience, speed and accuracy from previous versions.
+
+- Results are now reported as clone pairs rather than
+  clone classes.  Accuracy is improved as a result.
+  Clone pairs are reported in largest-to-smallest order.
+
+- Clone pairs are now reported with their near-miss
+  similarity percentage, e.g. similarity="90" means 
+  90% of pretty-printed, normalized lines are the same.
+
+- Clone pairs entirely embedded in larger clone pairs
+  are now accurately removed from the results.
+
+- Clone classes can optionally be requested using the 
+  "cluster=yes" configuration parameter. Clusters are
+  now reported as the largest set of clone pairs for
+  which every source fragment is within the threshold 
+  distance of at least one other member of the set.
+
+- HTML reports are now only created on request, using
+  the "report=yes" configuation parameter.
+
+- Default clone size range is now 10-1000 lines rather
+  than 5-500.  Minimum clone size of 5 yields 
+  irrelevant results, particularly for blocks,
+  and there is really no reason for a maximum size.
+  The range can still be controlled by configuration
+  parameters "min=NN" and "max=MM".
+
+- The NiCad command has been changed to "nicad3"
+  to remind you it is not like original NiCad.
+

@@ -1,0 +1,60 @@
+
+<HTML>
+
+<HEAD>
+<META HTTP-EQUIV="Context-Type" CONTEXT="text/html;charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft Internet Assistant for PowerPoint 97">
+ <TITLE>Iterator (cont’d)</TITLE> 
+</HEAD>
+
+<BODY     >
+
+ <H1>Iterator (cont’d)</H1> 
+ <P><UL>
+<LI><H2>Consequences: 
+</H2>
+<UL>
+<LI>algorithms can be implemented independent of representation
+<LI>encapsulation is preserved
+</UL></UL><UL>
+<LI><H2>Implementation: 
+</H2>
+<UL>
+<LI>who controls traversal
+<UL>
+<LI>internal vs. external iterators
+</UL><LI>robust iterators: what happens when the aggregate is modified while iterator is active
+<UL>
+<LI>iterator is adjusted
+<LI>avoid it by iterating over a copy (expensive)
+</UL></UL></UL><UL>
+<LI><H2>Iterators in java.util
+</H2>
+<UL>
+<LI>Iterator protocol is define by Enumeration interface
+<LI>Factory Method elements() returns a container’s iterator
+<LI>Iterator implementation can be package private
+<LI>Java iterators are not robust</UL></UL></P>
+<P><UL>
+public interface Enumeration {
+<BR></UL><UL>
+    boolean hasMoreElements();
+</UL><UL>
+    Object nextElement();
+</UL><UL>
+}</UL></P>
+<P></P> 
+<P>
+<TABLE>
+  <TD HEIGHT=100 WIDTH=100> <A HREF="tsld020.htm">Previous slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=100> <A HREF="tsld022.htm">Next slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=150> <A HREF="tsld001.htm">Back to first slide</A> </TD>
+  <TD HEIGHT=100 WIDTH=150> <A HREF="sld021.htm">View graphic version</A> </TD>
+</TABLE>
+<BR>
+</P>
+
+
+
+</Body>
+</HTML>

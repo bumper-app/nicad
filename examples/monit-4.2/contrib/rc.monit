@@ -1,0 +1,61 @@
+#! /bin/sh
+#
+# monit         Monitor Unix systems
+#
+# Author:	Clinton Work,   <work@scripty.com>
+#
+# chkconfig:    345 98 02
+# description:  Monit is a utility for managing and monitoring processes,
+#               files, directories and devices on a Unix system. 
+# processname:  monit
+# pidfile:      /var/run/monit.pid
+# config:       /etc/monitrc
+
+# Source function library.
+. /etc/init.d/functions
+
+MONIT=/usr/bin/monit
+MONITRC=/etc/monitrc
+
+[ -f $MONIT ] || exit 0
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+	echo -n "Starting monit: "
+	daemon --force $MONIT -c $MONITRC
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/monit
+	;;
+  stop)
+	echo -n "Stopping monit: "
+	daemon --force $MONIT -c $MONITRC quit
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/monit
+	;;
+  restart)
+  	$0 stop
+	$0 start
+	RETVAL=$?
+	;;
+  reload)
+	echo -n "Reloading monit: "
+	daemon --force $MONIT -c $MONITRC reload
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/monit
+	;;
+  status)
+	$MONIT -c $MONITRC status
+	RETVAL=$?
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|reload|status}"
+	exit 1
+esac
+
+exit $RETVAL

@@ -1,0 +1,19 @@
+%
+%
+% external variable and function declartions for signal routines
+% for SUN4 UNIX environment
+%
+
+#if not TL_SIGNAL then
+#define TL_SIGNAL
+
+include "%signalTypes"
+
+var BADSIG  : sigproc ; int4@(addr(BADSIG)) := -1
+var SIG_DFL : sigproc ; int4@(addr(SIG_DFL)) := 0
+var SIG_IGN : sigproc ; int4@(addr(SIG_IGN)) := 1
+
+external "signal" function Csignal (sig : int, routine : sigproc) : sigproc
+external function kill (pid, sig : int) status : int
+
+#end if
